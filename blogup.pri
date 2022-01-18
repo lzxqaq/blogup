@@ -1,11 +1,10 @@
 !isEmpty(BLOGUP_PRI_INCLUDED):error("blogup.pri already included")
-BLOGUP_PRI_INCLUDED = 1
 
-include(blogup_config.pri)
+isEmpty(CONFIG_PRI_INCLUDED){include(config.pri)}
 
 VERSION = $$BLOGUP_VERSION
 
-CONFIG += c++17 c++1z
+CONFIG += c++14
 
 defineReplace(qtLibraryTargetName) {
    unset(LIBRARY_NAME)
@@ -25,6 +24,20 @@ defineReplace(qtLibraryName) {
    win32 {
       VERSION_LIST = $$split(BLOGUP_VERSION, .)
       RET = $$RET$$first(VERSION_LIST)
+   }
+   return($$RET)
+}
+
+# eg: $$qtLibraryNameVersion(qcanpool, 1)
+defineReplace(qtLibraryNameVersion) {
+   RET = $$qtLibraryTargetName($$1)
+   win32 {
+      exists($$2) {
+          VERSION_LIST = $$split(BLOGUP_VERSION, .)
+          RET = $$RET$$first(VERSION_LIST)
+      } else {
+          RET = $$RET$$2
+      }
    }
    return($$RET)
 }
@@ -63,9 +76,17 @@ darwin:!minQtVersion(5, 7, 0) {
     QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.8
 }
 
-isEmpty(IDE_LIBRARY_BASENAME) {
-    IDE_LIBRARY_BASENAME = lib
+QTC_BUILD_TESTS = $$(QTC_BUILD_TESTS)
+!isEmpty(QTC_BUILD_TESTS):TEST = $$QTC_BUILD_TESTS
+
+!isEmpty(BUILD_TESTS):TEST = 1
+
+isEmpty(TEST):CONFIG(debug, debug|release) {
+    !debug_and_release|build_pass {
+        TEST = 1
+    }
 }
+
 
 equals(TEST, 1) {
     QT +=testlib
@@ -73,76 +94,6 @@ equals(TEST, 1) {
 }
 
 
-IDE_SOURCE_TREE = $$PWD
-isEmpty(IDE_BUILD_TREE) {
-    sub_dir = $$_PRO_FILE_PWD_
-    sub_dir ~= s,^$$re_escape($$PWD),,
-    IDE_BUILD_TREE = $$clean_path($$OUT_PWD)
-    IDE_BUILD_TREE ~= s,$$re_escape($$sub_dir)$,,
-}
-
-IDE_APP_PATH = $$IDE_BUILD_TREE/bin
-osx {
-    IDE_APP_TARGET   = "$$IDE_DISPLAY_NAME"
-
-    # check if IDE_BUILD_TREE is actually an existing Qt Creator.app,
-    # for building against a binary package
-    exists($$IDE_BUILD_TREE/Contents/MacOS/$$IDE_APP_TARGET): IDE_APP_BUNDLE = $$IDE_BUILD_TREE
-    else: IDE_APP_BUNDLE = $$IDE_APP_PATH/$${IDE_APP_TARGET}.app
-
-    # set output path if not set manually
-    isEmpty(IDE_OUTPUT_PATH): IDE_OUTPUT_PATH = $$IDE_APP_BUNDLE/Contents
-
-    IDE_LIBRARY_PATH = $$IDE_OUTPUT_PATH/Frameworks
-    IDE_PLUGIN_PATH  = $$IDE_OUTPUT_PATH/PlugIns
-    IDE_LIBEXEC_PATH = $$IDE_OUTPUT_PATH/Resources/libexec
-    IDE_DATA_PATH    = $$IDE_OUTPUT_PATH/Resources
-    IDE_DOC_PATH     = $$IDE_DATA_PATH/doc
-    IDE_BIN_PATH     = $$IDE_OUTPUT_PATH/MacOS
-    copydata = 1
-
-    LINK_LIBRARY_PATH = $$IDE_APP_BUNDLE/Contents/Frameworks
-    LINK_PLUGIN_PATH  = $$IDE_APP_BUNDLE/Contents/PlugIns
-
-    INSTALL_LIBRARY_PATH = $$QTC_PREFIX/$${IDE_APP_TARGET}.app/Contents/Frameworks
-    INSTALL_PLUGIN_PATH  = $$QTC_PREFIX/$${IDE_APP_TARGET}.app/Contents/PlugIns
-    INSTALL_LIBEXEC_PATH = $$QTC_PREFIX/$${IDE_APP_TARGET}.app/Contents/Resources/libexec
-    INSTALL_DATA_PATH    = $$QTC_PREFIX/$${IDE_APP_TARGET}.app/Contents/Resources
-    INSTALL_DOC_PATH     = $$INSTALL_DATA_PATH/doc
-    INSTALL_BIN_PATH     = $$QTC_PREFIX/$${IDE_APP_TARGET}.app/Contents/MacOS
-    INSTALL_APP_PATH     = $$QTC_PREFIX/
-} else {
-    contains(TEMPLATE, vc.*):vcproj = 1
-    IDE_APP_TARGET   = $$IDE_ID
-
-    # target output path if not set manually
-    isEmpty(IDE_OUTPUT_PATH): IDE_OUTPUT_PATH = $$IDE_BUILD_TREE
-
-    IDE_LIBRARY_PATH = $$IDE_OUTPUT_PATH/$$IDE_LIBRARY_BASENAME/blogup
-    IDE_PLUGIN_PATH  = $$IDE_LIBRARY_PATH/plugins
-    IDE_DATA_PATH    = $$IDE_OUTPUT_PATH/share/blogup
-    IDE_DOC_PATH     = $$IDE_OUTPUT_PATH/share/doc/blogup
-    IDE_BIN_PATH     = $$IDE_OUTPUT_PATH/bin
-    win32: \
-        IDE_LIBEXEC_PATH = $$IDE_OUTPUT_PATH/bin
-    else: \
-        IDE_LIBEXEC_PATH = $$IDE_OUTPUT_PATH/libexec/blogup
-    !isEqual(IDE_SOURCE_TREE, $$IDE_OUTPUT_PATH):copydata = 1
-
-    LINK_LIBRARY_PATH = $$IDE_BUILD_TREE/$$IDE_LIBRARY_BASENAME/blogup
-    LINK_PLUGIN_PATH  = $$LINK_LIBRARY_PATH/plugins
-
-    INSTALL_LIBRARY_PATH = $$QTC_PREFIX/$$IDE_LIBRARY_BASENAME/blogup
-    INSTALL_PLUGIN_PATH  = $$INSTALL_LIBRARY_PATH/plugins
-    win32: \
-        INSTALL_LIBEXEC_PATH = $$QTC_PREFIX/bin
-    else: \
-        INSTALL_LIBEXEC_PATH = $$QTC_PREFIX/libexec/blogup
-    INSTALL_DATA_PATH    = $$QTC_PREFIX/share/blogup
-    INSTALL_DOC_PATH     = $$QTC_PREFIX/share/doc/blogup
-    INSTALL_BIN_PATH     = $$QTC_PREFIX/bin
-    INSTALL_APP_PATH     = $$QTC_PREFIX/bin
-}
 
 gcc:!clang: QMAKE_CXXFLAGS += -Wno-noexcept-type
 
@@ -170,6 +121,9 @@ win32:exists($$IDE_SOURCE_TREE/lib/blogup) {
 QTC_PLUGIN_DIRS_FROM_ENVIRONMENT = $$(QTC_PLUGIN_DIRS)
 QTC_PLUGIN_DIRS += $$split(QTC_PLUGIN_DIRS_FROM_ENVIRONMENT, $$QMAKE_DIRLIST_SEP)
 QTC_PLUGIN_DIRS += $$IDE_SOURCE_TREE/src/plugins
+!isEqual($$IDE_SOURCE_TREE, $$QTCANPOOL_DIR) {
+    QTC_PLUGIN_DIRS += $$QTCANPOOL_DIR/src/plugins
+}
 for(dir, QTC_PLUGIN_DIRS) {
     INCLUDEPATH += $$dir
 }
@@ -177,6 +131,9 @@ for(dir, QTC_PLUGIN_DIRS) {
 QTC_LIB_DIRS_FROM_ENVIRONMENT = $$(QTC_LIB_DIRS)
 QTC_LIB_DIRS += $$split(QTC_LIB_DIRS_FROM_ENVIRONMENT, $$QMAKE_DIRLIST_SEP)
 QTC_LIB_DIRS += $$IDE_SOURCE_TREE/src/libs
+!isEqual($$IDE_SOURCE_TREE, $$QTCANPOOL_DIR) {
+    QTC_LIB_DIRS += $$QTCANPOOL_DIR/src/libs
+}
 for(dir, QTC_LIB_DIRS) {
     INCLUDEPATH += $$dir
 }
@@ -203,14 +160,14 @@ DEFINES += \
     QT_USE_FAST_CONCATENATION
 
 unix {
-    CONFIG(debug, debug|release):OBJECTS_DIR = $${OUT_PWD}/.obj/debug-shared
-    CONFIG(release, debug|release):OBJECTS_DIR = $${OUT_PWD}/.obj/release-shared
+    CONFIG(debug, debug|release):OBJECTS_DIR = $${BLOGUP_OUT_PWD}/.obj/debug-shared
+    CONFIG(release, debug|release):OBJECTS_DIR = $${BLOGUP_OUT_PWD}/.obj/release-shared
 
-    CONFIG(debug, debug|release):MOC_DIR = $${OUT_PWD}/.moc/debug-shared
-    CONFIG(release, debug|release):MOC_DIR = $${OUT_PWD}/.moc/release-shared
+    CONFIG(debug, debug|release):MOC_DIR = $${BLOGUP_OUT_PWD}/.moc/debug-shared
+    CONFIG(release, debug|release):MOC_DIR = $${BLOGUP_OUT_PWD}/.moc/release-shared
 
-    RCC_DIR = $${OUT_PWD}/.rcc
-    UI_DIR = $${OUT_PWD}/.uic
+    RCC_DIR = $${BLOGUP_OUT_PWD}/.rcc
+    UI_DIR = $${BLOGUP_OUT_PWD}/.uic
 }
 
 msvc {
@@ -223,19 +180,18 @@ msvc {
 
 qt {
     contains(QT, core): QT += concurrent
-    contains(QT, core): greaterThan(QT_MAJOR_VERSION, 5): QT += core5compat
     contains(QT, gui): QT += widgets
 }
 
-#QBSFILE = $$replace(BLOGUP_PRO_FILE, \\.pro$, .qbs)
-#exists($$QBSFILE):DISTFILES += $$QBSFILE
+QBSFILE = $$replace(BLOGUP_PRO_FILE, \\.pro$, .qbs)
+exists($$QBSFILE):DISTFILES += $$QBSFILE
 
 !isEmpty(QTC_PLUGIN_DEPENDS) {
     LIBS *= -L$$IDE_PLUGIN_PATH  # plugin path from output directory
     LIBS *= -L$$LINK_PLUGIN_PATH  # when output path is different from Qt Canpool build directory
 }
 
-# recursively resolve plugin derpath_lib.prips
+# recursively resolve plugin deps
 done_plugins =
 for(ever) {
     isEmpty(QTC_PLUGIN_DEPENDS): \
@@ -280,3 +236,11 @@ for(ever) {
     QTC_LIB_DEPENDS = $$unique(QTC_LIB_DEPENDS)
     QTC_LIB_DEPENDS -= $$unique(done_libs)
 }
+
+CONFIG(release, debug|release){
+    DEFINES     += QT_MESSAGELOGCONTEXT
+}
+
+INCLUDEPATH += $$PWD/include
+
+DEFINES += QT_DEPRECATED_WARNINGS
