@@ -1,0 +1,4 @@
+#ifndef PLUGINMANAGER_P_H
+#define PLUGINMANAGER_P_H
+
+#endif // PLUGINMANAGER_P_H

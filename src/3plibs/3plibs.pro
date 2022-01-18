@@ -3,8 +3,12 @@ CONFIG   += ordered
 
 SUBDIRS = \
     advanceddockingsystem \
+    qsimpleupdater \
+    singleapplication
 
-QTC_LIB_DEPENDS =
-include(advanceddockingsystem/advanceddockingsystem_dependencies.pri)
-lv = advanceddockingsystem.depends
-$$lv = $$QTC_LIB_DEPENDS
+for(l, SUBDIRS) {
+    QTC_LIB_DEPENDS =
+    include($$l/$${l}_dependencies.pri)
+    lv = $${l}.depends
+    $$lv = $$QTC_LIB_DEPENDS
+}

@@ -3,7 +3,7 @@ include(../../blogup.pri)
 TEMPLATE  = subdirs
 
 SUBDIRS =   \
-
+    extensionsystem
 
 for(l, SUBDIRS) {
     QTC_LIB_DEPENDS =

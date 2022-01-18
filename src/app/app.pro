@@ -1,6 +1,8 @@
 include(../../blogup.pri)
 
 include(../3plibs/advanceddockingsystem/advanceddockingsystem-lib.pri)
+include(../3plibs/qsimpleupdater/qsimpleupdater.pri)
+include(../3plibs/singleapplication/singleapplication.pri)
 
 TEMPLATE = app
 TARGET = blogup
@@ -23,7 +25,7 @@ HEADERS += \
     ui_mainwindow.h \
     ui_statusdialog.h
 
-LIBS *= -l$$qtLibraryName(AdvancedDockingSystem)
+LIBS *= -l$$qtLibraryName(AdvancedDockingSystem) -l$$qtLibraryName(QSimpleUpdater)  -l$$qtLibraryName(SingleApplication)
 
 target.path = $$INSTALL_APP_PATH
 INSTALLS += target

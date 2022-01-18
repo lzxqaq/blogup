@@ -1,2 +1,0 @@
-QTC_PLUGIN_NAME = QTCPlugin
-
