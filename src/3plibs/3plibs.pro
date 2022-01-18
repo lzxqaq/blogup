@@ -3,5 +3,8 @@ CONFIG   += ordered
 
 SUBDIRS = \
     advanceddockingsystem \
-    utils \
-    extensionsystem
+
+QTC_LIB_DEPENDS =
+include(advanceddockingsystem/advanceddockingsystem_dependencies.pri)
+lv = advanceddockingsystem.depends
+$$lv = $$QTC_LIB_DEPENDS

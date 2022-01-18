@@ -3,10 +3,10 @@ include(../../blogup.pri)
 TEMPLATE  = subdirs
 
 SUBDIRS   = \
-    qtcplugin \
-    coreplugin \
-    texteditor \
-    projectexplorer
+#    qtcplugin \
+#    coreplugin \
+#    texteditor \
+#    projectexplorer
 
 for(p, SUBDIRS) {
     QTC_PLUGIN_DEPENDS =

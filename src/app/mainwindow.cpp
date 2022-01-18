@@ -282,9 +282,9 @@ CMainWindow::CMainWindow(QWidget *parent) :
     // Default window geometry - center on screen
     resize(1280, 720);
     setGeometry(QStyle::alignedRect(
-                    Qt::LeftToRight, Qt::AlignCenter, frameSize(),
-                    QGuiApplication::primaryScreen()->availableGeometry()
-                    ));
+        Qt::LeftToRight, Qt::AlignCenter, frameSize(),
+        QGuiApplication::primaryScreen()->availableGeometry()
+        ));
 
     //d->restoreState();
     d->restorePerspectives();
@@ -320,7 +320,7 @@ void CMainWindow::createEditor()
     if (EditorArea)
     {
         std::cout << "DockAreaCount before: " << EditorArea->dockContainer()->dockAreaCount() << std::endl;
-//        d->DockManager->setConfigFlag(ads::CDockManager::EqualSplitOnInsertion, true);
+        //        d->DockManager->setConfigFlag(ads::CDockManager::EqualSplitOnInsertion, true);
         d->DockManager->addDockWidget(ads::CenterDockWidgetArea, DockWidget, EditorArea);
         std::cout << "DockAreaCount after: " << DockWidget->dockContainer()->dockAreaCount() << std::endl;
     }
@@ -339,7 +339,7 @@ void CMainWindow::onEditorCloseRequested()
     auto DockWidget = qobject_cast<ads::CDockWidget*>(sender());
     int Result = QMessageBox::question(this, "Close Editor", QString("Editor %1 "
                                                                      "contains unsaved changes? Would you like to close it?")
-                                       .arg(DockWidget->windowTitle()));
+                                                                 .arg(DockWidget->windowTitle()));
     if (QMessageBox::Yes == Result)
     {
         DockWidget->closeDockWidget();
