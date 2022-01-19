@@ -13,17 +13,13 @@ SHARED_PATH = $$PWD/../../shared/
 
 SOURCES += \
     main.cpp \
-    mainwindow.cpp \
-    statusdialog.cpp
+    mainwindow.cpp
 
 RESOURCES += \
     app.qrc
 
 HEADERS += \
-    mainwindow.h \
-    statusdialog.h \
-    ui_mainwindow.h \
-    ui_statusdialog.h
+    mainwindow.h
 
 LIBS *= -l$$qtLibraryName(AdvancedDockingSystem) -l$$qtLibraryName(QSimpleUpdater)  -l$$qtLibraryName(SingleApplication)
 
@@ -31,3 +27,6 @@ target.path = $$INSTALL_APP_PATH
 INSTALLS += target
 
 include(../rpath.pri)
+
+FORMS += \
+    mainwindow.ui

@@ -1,31 +1,4 @@
 
-/*******************************************************************************
-** Qt Advanced Docking System
-** Copyright (C) 2017 Uwe Kindler
-**
-** This library is free software; you can redistribute it and/or
-** modify it under the terms of the GNU Lesser General Public
-** License as published by the Free Software Foundation; either
-** version 2.1 of the License, or (at your option) any later version.
-**
-** This library is distributed in the hope that it will be useful,
-** but WITHOUT ANY WARRANTY; without even the implied warranty of
-** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-** Lesser General Public License for more details.
-**
-** You should have received a copy of the GNU Lesser General Public
-** License along with this library; If not, see <http://www.gnu.org/licenses/>.
-******************************************************************************/
-
-
-//============================================================================
-/// \file   MainWindow.cpp
-/// \author Uwe Kindler
-/// \date   13.02.2018
-/// \brief  Implementation of CMainWindow demo class
-//============================================================================
-
-
 //============================================================================
 //                                   INCLUDES
 //============================================================================
@@ -71,7 +44,6 @@
 #include "DockAreaTabBar.h"
 #include "FloatingDockContainer.h"
 #include "DockComponentsFactory.h"
-#include "statusdialog.h"
 #include "DockSplitter.h"
 
 /**
@@ -211,16 +183,16 @@ void MainWindowPrivate::createContent()
 void MainWindowPrivate::createActions()
 {
 
-    QAction* a = ui.toolBar->addAction("Create Docked Editor");
-    a->setProperty("Floating", false);
-    a->setToolTip("Creates a docked editor windows that are deleted on close");
-    a->setIcon(svgIcon(":/adsdemo/images/docked_editor.svg"));
-    _this->connect(a, SIGNAL(triggered()), SLOT(createEditor()));
-    ui.menuTests->addAction(a);
+//    QAction* a = ui.toolBar->addAction("Create Docked Editor");
+//    a->setProperty("Floating", false);
+//    a->setToolTip("Creates a docked editor windows that are deleted on close");
+//    a->setIcon(svgIcon(":/adsdemo/images/docked_editor.svg"));
+//    _this->connect(a, SIGNAL(triggered()), SLOT(createEditor()));
+//    ui.menuTests->addAction(a);
 
-    ui.menuTests->addSeparator();
-    a = ui.menuTests->addAction("Show Status Dialog");
-    _this->connect(a, SIGNAL(triggered()), SLOT(showStatusDialog()));
+//    ui.menuTests->addSeparator();
+//    a = ui.menuTests->addAction("Show Status Dialog");
+//    _this->connect(a, SIGNAL(triggered()), SLOT(showStatusDialog()));
 
 
 }
@@ -346,13 +318,3 @@ void CMainWindow::onEditorCloseRequested()
     }
 }
 
-
-//============================================================================
-
-
-//============================================================================
-void CMainWindow::showStatusDialog()
-{
-    CStatusDialog Dialog(d->DockManager);
-    Dialog.exec();
-}
