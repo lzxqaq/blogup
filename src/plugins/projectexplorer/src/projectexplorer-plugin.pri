@@ -1,2 +1,4 @@
 HEADERS += \
-    $$PWD/qtcplugin.h
+    $$PWD/projectexplorerplugin.h
+
+INCLUDEPATH += $$PWD

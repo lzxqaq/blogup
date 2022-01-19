@@ -1,2 +1,4 @@
 HEADERS += \
-    $$PWD/qtcplugin.h
+    $$PWD/coreplugin.h
+
+INCLUDEPATH += $$PWD
