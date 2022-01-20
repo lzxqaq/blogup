@@ -7,7 +7,6 @@
 
 #include <iostream>
 
-#include <QTime>
 #include <QLabel>
 #include <QTextEdit>
 #include <QCalendarWidget>
@@ -35,7 +34,6 @@
 #include <QPointer>
 
 #include <QMap>
-#include <QElapsedTimer>
 
 #include "DockManager.h"
 #include "DockWidget.h"
@@ -51,8 +49,6 @@
  */
 static QIcon svgIcon(const QString& File)
 {
-    // This is a workaround, because in item views SVG icons are not
-    // properly scaled and look blurry or pixelate
     QIcon SvgIcon(File);
     SvgIcon.addPixmap(SvgIcon.pixmap(92));
     return SvgIcon;
@@ -67,9 +63,8 @@ struct MainWindowPrivate
 {
     CMainWindow* _this;
     Ui::MainWindow ui;
-    ads::CDockManager* DockManager = nullptr;
-    ads::CDockWidget* WindowTitleTestDockWidget = nullptr;
-    QPointer<ads::CDockWidget> LastDockedEditor;
+    ads::CDockManager* m_dockManager = nullptr;
+    QPointer<ads::CDockWidget> m_centerDock;
 
     MainWindowPrivate(CMainWindow* _public) : _this(_public) {}
 
@@ -82,21 +77,6 @@ struct MainWindowPrivate
      * Fill the dock manager with dock widgets
      */
     void createContent();
-
-    /**
-     * Saves the dock manager state and the main window geometry
-     */
-    void saveState();
-
-    /**
-     * Restores the dock manager state
-     */
-    void restoreState();
-
-    /**
-     * Restore the perspective listo of the dock manager
-     */
-    void restorePerspectives();
 
     /**
      * Creates a dock widget with a file system tree view
@@ -114,14 +94,28 @@ struct MainWindowPrivate
         w->hideColumn(2);
         w->hideColumn(3);
 
+        w->setHeaderHidden(true);
+
         ads::CDockWidget* fileWidget = new ads::CDockWidget(QString("Filesystem"));
         fileWidget->setWidget(w);
-        fileWidget->setFeature(ads::CDockWidget::CustomCloseHandling, true);
+        fileWidget->setFeature(ads::CDockWidget::DockWidgetMovable, false);
+        fileWidget->setFeature(ads::CDockWidget::DockWidgetFloatable, false);
+        fileWidget->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
-        // We disable focus to test focus highlighting if the dock widget content
-        // does not support focus
-        w->setFocusPolicy(Qt::NoFocus);
         return fileWidget;
+    }
+
+
+    ads::CDockWidget* createCenterWidget()
+    {
+        QWidget *w = new QWidget();
+        ads::CDockWidget* CentralDockWidget = new ads::CDockWidget(QString("Get Started"));
+        CentralDockWidget->setWidget(w);
+        CentralDockWidget->setFeature(ads::CDockWidget::NoTab, true);
+
+        m_dockManager->setCentralWidget(CentralDockWidget);
+
+        return CentralDockWidget;
     }
 
     /**
@@ -137,98 +131,30 @@ struct MainWindowPrivate
         DockWidget->setIcon(svgIcon(":/adsdemo/images/edit.svg"));
         DockWidget->setFeature(ads::CDockWidget::CustomCloseHandling, true);
 
-        QMenu* OptionsMenu = new QMenu(DockWidget);
-        OptionsMenu->setTitle(QObject::tr("Options"));
-        OptionsMenu->setToolTip(OptionsMenu->title());
-        OptionsMenu->setIcon(svgIcon(":/adsdemo/images/custom-menu-button.svg"));
-        auto MenuAction = OptionsMenu->menuAction();
-        // The object name of the action will be set for the QToolButton that
-        // is created in the dock area title bar. You can use this name for CSS
-        // styling
-        MenuAction->setObjectName("optionsMenu");
-        DockWidget->setTitleBarActions({OptionsMenu->menuAction()});
-        auto a = OptionsMenu->addAction(QObject::tr("Clear Editor"));
-        w->connect(a, SIGNAL(triggered()), SLOT(clear()));
-
         return DockWidget;
     }
+
+private slots:
+    void on_actionNewFile_triggered();
 };
 
 //============================================================================
 void MainWindowPrivate::createContent()
 {
     auto FileSystemWidget = createFileSystemTreeDockWidget();
-    FileSystemWidget->setFeature(ads::CDockWidget::DockWidgetFloatable, false);
-    FileSystemWidget->setFeature(ads::CDockWidget::DockWidgetMovable, false);
-    FileSystemWidget->setFeature(ads::CDockWidget::DockWidgetFloatable, false);
-    FileSystemWidget->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
+    auto DockWidget = createCenterWidget();
 
-    auto DockWidget = createEditorWidget();
-    DockWidget->setFeature(ads::CDockWidget::DockWidgetDeleteOnClose, true);
-    DockWidget->setFeature(ads::CDockWidget::DockWidgetForceCloseWithArea, true);
-    _this->connect(DockWidget, SIGNAL(closeRequested()), SLOT(onEditorCloseRequested()));
+    m_centerDock = DockWidget;
 
-    ads::CDockAreaWidget* CentralDockArea = DockManager->setCentralWidget(DockWidget);
-    CentralDockArea->setAllowedAreas(ads::DockWidgetArea::OuterDockAreas);
-
-    DockManager->addDockWidget(ads::LeftDockWidgetArea, FileSystemWidget);
-
-    LastDockedEditor = DockWidget;
-
+    m_dockManager->addDockWidget(ads::LeftDockWidgetArea, FileSystemWidget);
 }
-
 
 //============================================================================
 void MainWindowPrivate::createActions()
 {
-
-//    QAction* a = ui.toolBar->addAction("Create Docked Editor");
-//    a->setProperty("Floating", false);
-//    a->setToolTip("Creates a docked editor windows that are deleted on close");
-//    a->setIcon(svgIcon(":/adsdemo/images/docked_editor.svg"));
-//    _this->connect(a, SIGNAL(triggered()), SLOT(createEditor()));
-//    ui.menuTests->addAction(a);
-
-//    ui.menuTests->addSeparator();
-//    a = ui.menuTests->addAction("Show Status Dialog");
-//    _this->connect(a, SIGNAL(triggered()), SLOT(showStatusDialog()));
-
-
+    _this->connect(ui.actionNewFile, SIGNAL(triggered()), SLOT(createEditor()));
 }
-
-
-//============================================================================
-void MainWindowPrivate::saveState()
-{
-    QSettings Settings("Settings.ini", QSettings::IniFormat);
-    Settings.setValue("mainWindow/Geometry", _this->saveGeometry());
-    Settings.setValue("mainWindow/State", _this->saveState());
-    Settings.setValue("mainWindow/DockingState", DockManager->saveState());
-}
-
-
-//============================================================================
-void MainWindowPrivate::restoreState()
-{
-    QSettings Settings("Settings.ini", QSettings::IniFormat);
-    _this->restoreGeometry(Settings.value("mainWindow/Geometry").toByteArray());
-    _this->restoreState(Settings.value("mainWindow/State").toByteArray());
-    DockManager->restoreState(Settings.value("mainWindow/DockingState").toByteArray());
-}
-
-
-
-//============================================================================
-
-
-//============================================================================
-void MainWindowPrivate::restorePerspectives()
-{
-    QSettings Settings("Settings.ini", QSettings::IniFormat);
-    DockManager->loadPerspectives(Settings);
-}
-
 
 //============================================================================
 CMainWindow::CMainWindow(QWidget *parent) :
@@ -248,7 +174,7 @@ CMainWindow::CMainWindow(QWidget *parent) :
     CDockManager::setConfigFlag(CDockManager::FocusHighlighting, true);
 
     // Now create the dock manager and its content
-    d->DockManager = new CDockManager(this);
+    d->m_dockManager = new CDockManager(this);
 
     d->createContent();
     // Default window geometry - center on screen
@@ -257,9 +183,6 @@ CMainWindow::CMainWindow(QWidget *parent) :
         Qt::LeftToRight, Qt::AlignCenter, frameSize(),
         QGuiApplication::primaryScreen()->availableGeometry()
         ));
-
-    //d->restoreState();
-    d->restorePerspectives();
 }
 
 
@@ -273,10 +196,7 @@ CMainWindow::~CMainWindow()
 //============================================================================
 void CMainWindow::closeEvent(QCloseEvent* event)
 {
-    d->saveState();
-    // Delete dock manager here to delete all floating widgets. This ensures
-    // that all top level windows of the dock manager are properly closed
-    d->DockManager->deleteLater();
+    d->m_dockManager->deleteLater();
     QMainWindow::closeEvent(event);
 }
 
@@ -288,22 +208,16 @@ void CMainWindow::createEditor()
     DockWidget->setFeature(ads::CDockWidget::DockWidgetForceCloseWithArea, true);
     connect(DockWidget, SIGNAL(closeRequested()), SLOT(onEditorCloseRequested()));
 
-    ads::CDockAreaWidget* EditorArea = d->LastDockedEditor ? d->LastDockedEditor->dockAreaWidget() : nullptr;
+    ads::CDockAreaWidget* EditorArea = d->m_centerDock ? d->m_centerDock->dockAreaWidget() : nullptr;
     if (EditorArea)
     {
-        std::cout << "DockAreaCount before: " << EditorArea->dockContainer()->dockAreaCount() << std::endl;
-        //        d->DockManager->setConfigFlag(ads::CDockManager::EqualSplitOnInsertion, true);
-        d->DockManager->addDockWidget(ads::CenterDockWidgetArea, DockWidget, EditorArea);
-        std::cout << "DockAreaCount after: " << DockWidget->dockContainer()->dockAreaCount() << std::endl;
+        d->m_dockManager->addDockWidget(ads::CenterDockWidgetArea, DockWidget, EditorArea);
     }
     else
     {
-        d->DockManager->addDockWidget(ads::RightDockWidgetArea, DockWidget);
+        d->m_dockManager->addDockWidget(ads::RightDockWidgetArea, DockWidget);
     }
-    d->LastDockedEditor = DockWidget;
-
 }
-
 
 //============================================================================
 void CMainWindow::onEditorCloseRequested()

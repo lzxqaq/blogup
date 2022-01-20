@@ -68,25 +68,9 @@
    <addaction name="menuAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <widget class="QToolBar" name="toolBar">
-   <property name="windowTitle">
-    <string>toolBar</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
   <action name="actionNewFile">
    <property name="text">
     <string>New File</string>
-   </property>
-  </action>
-  <action name="actionOpen_File">
-   <property name="text">
-    <string>Open File</string>
    </property>
   </action>
   <action name="actionNewPost">
@@ -115,6 +99,9 @@
    </property>
   </action>
   <action name="actionAutoSave">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Auto Save</string>
    </property>
