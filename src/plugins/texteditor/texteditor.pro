@@ -1,4 +1,5 @@
 include(../../plugin.pri)
 include(src/texteditor-plugin.pri)
 
-include(../../libs/pluginmanager/pluginmanager-include.pri)
+include(../../libs/scintilla/scintilla-include.pri)
+include(../../libs/extensionsystem/extensionsystem-include.pri)

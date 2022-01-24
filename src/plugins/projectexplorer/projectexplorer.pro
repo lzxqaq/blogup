@@ -1,4 +1,4 @@
 include(../../plugin.pri)
 include(src/projectexplorer-plugin.pri)
 
-include(../../libs/pluginmanager/pluginmanager-include.pri)
+include(../../libs/extensionsystem/extensionsystem-include.pri)

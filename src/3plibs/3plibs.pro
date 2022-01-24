@@ -2,10 +2,6 @@ TEMPLATE  = subdirs
 CONFIG   += ordered
 
 SUBDIRS = \
-    advanceddockingsystem \
-    qsimpleupdater \
-    singleapplication \
-    scintilla
 
 for(l, SUBDIRS) {
     QTC_LIB_DEPENDS =

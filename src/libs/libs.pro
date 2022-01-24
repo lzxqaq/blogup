@@ -3,9 +3,11 @@ include(../../blogup.pri)
 TEMPLATE  = subdirs
 
 SUBDIRS =   \
-    extensionsystem \
-    pluginmanager
-
+    advanceddockingsystem \
+    qsimpleupdater \
+    singleapplication \
+    scintilla \
+    extensionsystem
 
 for(l, SUBDIRS) {
     QTC_LIB_DEPENDS =
