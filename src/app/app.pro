@@ -1,9 +1,11 @@
 include(../../blogup.pri)
 
-include(../3plibs/advanceddockingsystem/advanceddockingsystem-lib.pri)
-include(../3plibs/qsimpleupdater/qsimpleupdater.pri)
-include(../3plibs/singleapplication/singleapplication.pri)
+include(../3plibs/advanceddockingsystem/advanceddockingsystem-include.pri)
+include(../3plibs/qsimpleupdater/qsimpleupdater-include.pri)
+include(../3plibs/singleapplication/singleapplication-include.pri)
+include(../3plibs/scintilla/scintilla-include.pri)
 
+include(../libs/pluginmanager/pluginmanager-include.pri)
 TEMPLATE = app
 TARGET = blogup
 DESTDIR = $$IDE_APP_PATH
@@ -21,7 +23,12 @@ RESOURCES += \
 HEADERS += \
     mainwindow.h
 
-LIBS *= -l$$qtLibraryName(AdvancedDockingSystem) -l$$qtLibraryName(QSimpleUpdater)  -l$$qtLibraryName(SingleApplication)
+LIBS *= \
+    -l$$qtLibraryName(AdvancedDockingSystem) \
+    -l$$qtLibraryName(QSimpleUpdater) \
+    -l$$qtLibraryName(SingleApplication) \
+    -l$$qtLibraryName(Scintilla) \
+    -l$$qtLibraryName(PluginManager) \
 
 target.path = $$INSTALL_APP_PATH
 INSTALLS += target

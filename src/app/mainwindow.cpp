@@ -35,14 +35,14 @@
 
 #include <QMap>
 
-#include "DockManager.h"
-#include "DockWidget.h"
-#include "DockAreaWidget.h"
-#include "DockAreaTitleBar.h"
-#include "DockAreaTabBar.h"
-#include "FloatingDockContainer.h"
-#include "DockComponentsFactory.h"
-#include "DockSplitter.h"
+#include "advanceddockingsystem/DockManager.h"
+#include "advanceddockingsystem/DockWidget.h"
+#include "advanceddockingsystem/DockAreaWidget.h"
+#include "advanceddockingsystem/DockAreaTitleBar.h"
+#include "advanceddockingsystem/DockAreaTabBar.h"
+#include "advanceddockingsystem/FloatingDockContainer.h"
+#include "advanceddockingsystem/DockComponentsFactory.h"
+#include "advanceddockingsystem/DockSplitter.h"
 
 /**
  * Helper function to create an SVG icon

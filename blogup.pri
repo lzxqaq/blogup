@@ -4,7 +4,7 @@ isEmpty(CONFIG_PRI_INCLUDED){include(config.pri)}
 
 VERSION = $$BLOGUP_VERSION
 
-CONFIG += c++14
+CONFIG += c++17
 
 defineReplace(qtLibraryTargetName) {
    unset(LIBRARY_NAME)
