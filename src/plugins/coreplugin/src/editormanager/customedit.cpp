@@ -1,6 +1,6 @@
 
 #include "customedit.h"
-#include "scintilla/include/Scintilla.h"
+#include "Scintilla.h"
 #include "uchardet.h"
 
 #include <QDir>

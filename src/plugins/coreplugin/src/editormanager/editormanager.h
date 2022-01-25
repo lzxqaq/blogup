@@ -12,7 +12,7 @@ class EditorManager : public QObject
     Q_OBJECT
 
 public:
-    explicit EditorManager(QObject *parent = nullptr);
+    static EditorManager *instance();
 
     CustomEdit *createEmptyEditor(const QString &name);
     CustomEdit *createEditorFromFile(const QString &filePath);
@@ -25,11 +25,17 @@ signals:
     void editorClosed(CustomEdit *editor);
 
 private:
+    explicit EditorManager(QObject *parent = nullptr);
+    ~EditorManager() override;
+
     void manageEditor(CustomEdit *editor);
     void setupEditor(CustomEdit *editor);
     void purgeOldEditorPointers();
 
     QList<QPointer<CustomEdit>> editors;
+
+    friend class MainWindow;
+
 };
 
 

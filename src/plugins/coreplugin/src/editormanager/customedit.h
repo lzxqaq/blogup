@@ -9,7 +9,7 @@
 #include <QAbstractScrollArea>
 
 #include "ScintillaEdit.h"
-#include "scintilla/include/Scintilla.h"
+#include "Scintilla.h"
 
 
 class CustomEdit : public ScintillaEdit

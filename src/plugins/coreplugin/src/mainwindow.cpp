@@ -4,6 +4,7 @@
 //============================================================================
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "editormanager/editormanager.h"
 
 #include <iostream>
 
@@ -59,8 +60,9 @@ static QIcon svgIcon(const QString& File)
 /**
  * Private data class pimpl
  */
-struct MainWindowPrivate
+class MainWindowPrivate : public QObject
 {
+public:
     MainWindow* _this;
     Ui::MainWindow ui;
     ads::CDockManager* m_dockManager = nullptr;
@@ -134,8 +136,8 @@ struct MainWindowPrivate
         return DockWidget;
     }
 
-private slots:
-    void on_actionNewFile_triggered();
+    void createEditor();
+    void onEditorCloseRequested();
 };
 
 //============================================================================
@@ -153,8 +155,40 @@ void MainWindowPrivate::createContent()
 //============================================================================
 void MainWindowPrivate::createActions()
 {
-    _this->connect(ui.actionNewFile, SIGNAL(triggered()), SLOT(createEditor()));
+    connect(ui.actionNewFile, &QAction::triggered, this, &MainWindowPrivate::createEditor);
 }
+//============================================================================
+void MainWindowPrivate::createEditor()
+{
+    auto DockWidget = createEditorWidget();
+    DockWidget->setFeature(ads::CDockWidget::DockWidgetDeleteOnClose, true);
+    DockWidget->setFeature(ads::CDockWidget::DockWidgetForceCloseWithArea, true);
+    connect(DockWidget, SIGNAL(closeRequested()), SLOT(onEditorCloseRequested()));
+
+    ads::CDockAreaWidget* EditorArea = m_centerDock ? m_centerDock->dockAreaWidget() : nullptr;
+    if (EditorArea)
+    {
+        m_dockManager->addDockWidget(ads::CenterDockWidgetArea, DockWidget, EditorArea);
+    }
+    else
+    {
+        m_dockManager->addDockWidget(ads::RightDockWidgetArea, DockWidget);
+    }
+}
+
+//============================================================================
+void MainWindowPrivate::onEditorCloseRequested()
+{
+    auto DockWidget = qobject_cast<ads::CDockWidget*>(sender());
+    int Result = QMessageBox::question(_this, "Close Editor", QString("Editor %1 "
+                                                                     "contains unsaved changes? Would you like to close it?")
+                                                                 .arg(DockWidget->windowTitle()));
+    if (QMessageBox::Yes == Result)
+    {
+        DockWidget->closeDockWidget();
+    }
+}
+
 
 //============================================================================
 MainWindow::MainWindow(QWidget *parent) :
@@ -173,6 +207,8 @@ MainWindow::MainWindow(QWidget *parent) :
     CDockManager::setConfigFlag(CDockManager::XmlCompressionEnabled, false);
     CDockManager::setConfigFlag(CDockManager::FocusHighlighting, true);
 
+    m_editorManager = new EditorManager(this);
+
     // Now create the dock manager and its content
     d->m_dockManager = new CDockManager(this);
 
@@ -189,6 +225,9 @@ MainWindow::MainWindow(QWidget *parent) :
 //============================================================================
 MainWindow::~MainWindow()
 {
+    delete m_editorManager;
+    m_editorManager = nullptr;
+
     delete d;
 }
 
@@ -201,34 +240,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
 }
 
 //============================================================================
-void MainWindow::createEditor()
-{
-    auto DockWidget = d->createEditorWidget();
-    DockWidget->setFeature(ads::CDockWidget::DockWidgetDeleteOnClose, true);
-    DockWidget->setFeature(ads::CDockWidget::DockWidgetForceCloseWithArea, true);
-    connect(DockWidget, SIGNAL(closeRequested()), SLOT(onEditorCloseRequested()));
 
-    ads::CDockAreaWidget* EditorArea = d->m_centerDock ? d->m_centerDock->dockAreaWidget() : nullptr;
-    if (EditorArea)
-    {
-        d->m_dockManager->addDockWidget(ads::CenterDockWidgetArea, DockWidget, EditorArea);
-    }
-    else
-    {
-        d->m_dockManager->addDockWidget(ads::RightDockWidgetArea, DockWidget);
-    }
-}
 
 //============================================================================
-void MainWindow::onEditorCloseRequested()
-{
-    auto DockWidget = qobject_cast<ads::CDockWidget*>(sender());
-    int Result = QMessageBox::question(this, "Close Editor", QString("Editor %1 "
-                                                                     "contains unsaved changes? Would you like to close it?")
-                                                                 .arg(DockWidget->windowTitle()));
-    if (QMessageBox::Yes == Result)
-    {
-        DockWidget->closeDockWidget();
-    }
-}
-

@@ -4,6 +4,7 @@
 #include <QObject>
 #include "extensionsystem/iplugin.h"
 
+class EditorManager;
 
 class TextEditorPlugin : public IPlugin
 {
@@ -17,7 +18,10 @@ public:
     void initialize() override;
 
     static TextEditorPlugin *instance();
+    EditorManager *getEditorManager() const { return editorManager; }
 
+private:
+    EditorManager *editorManager;
 
 };
 

@@ -8,14 +8,28 @@ const int MARK_HIDELINESBEGIN = 23;
 const int MARK_HIDELINESEND = 22;
 const int MARK_HIDELINESUNDERLINE = 21;
 
+static EditorManager *m_instance = nullptr;
 
-EditorManager::EditorManager(QObject *parent) : QObject(parent)
+EditorManager *EditorManager::instance()
 {
+    return m_instance;
+}
+
+EditorManager::EditorManager(QObject *parent)
+    : QObject(parent)
+{
+    m_instance = this;
+
     connect(this, &EditorManager::editorCreated, this, [=](CustomEdit *editor) {
         connect(editor, &CustomEdit::closed, this, [=]() {
             emit editorClosed(editor);
         });
     });
+}
+
+EditorManager::~EditorManager()
+{
+    m_instance = nullptr;
 }
 
 CustomEdit *EditorManager::createEmptyEditor(const QString &name)

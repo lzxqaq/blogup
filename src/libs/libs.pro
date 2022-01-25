@@ -7,7 +7,9 @@ SUBDIRS =   \
     qsimpleupdater \
     singleapplication \
     scintilla \
+    uchardet \
     extensionsystem
+
 
 for(l, SUBDIRS) {
     QTC_LIB_DEPENDS =

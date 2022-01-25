@@ -1,6 +1,5 @@
 DEFINES += EXTENSIONSYSTEM_LIBRARY
 
-
 SOURCES += \
     $$PWD/iplugin.cpp \
     $$PWD/pluginsmanager_p.cpp \
