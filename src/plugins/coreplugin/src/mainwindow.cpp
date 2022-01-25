@@ -5,6 +5,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "editormanager/editormanager.h"
+#include "editormanager/customedit.h"
 
 #include <iostream>
 
@@ -67,6 +68,7 @@ public:
     Ui::MainWindow ui;
     ads::CDockManager* m_dockManager = nullptr;
     QPointer<ads::CDockWidget> m_centerDock;
+    EditorManager *m_editorManager;
 
     MainWindowPrivate(MainWindow* _public) : _this(_public) {}
 
@@ -128,8 +130,12 @@ public:
         QPlainTextEdit* w = new QPlainTextEdit();
         w->setPlaceholderText("file path");
         w->setStyleSheet("border: none");
+
+        CustomEdit * edit = m_editorManager->createEmptyEditor("123");
+
         ads::CDockWidget* DockWidget = new ads::CDockWidget(QString("Editor"));
-        DockWidget->setWidget(w);
+        DockWidget->setWidget(edit);
+//        DockWidget->setWidget(w);
         DockWidget->setIcon(svgIcon(":/adsdemo/images/edit.svg"));
         DockWidget->setFeature(ads::CDockWidget::CustomCloseHandling, true);
 
@@ -207,7 +213,7 @@ MainWindow::MainWindow(QWidget *parent) :
     CDockManager::setConfigFlag(CDockManager::XmlCompressionEnabled, false);
     CDockManager::setConfigFlag(CDockManager::FocusHighlighting, true);
 
-    m_editorManager = new EditorManager(this);
+    d->m_editorManager = new EditorManager(this);
 
     // Now create the dock manager and its content
     d->m_dockManager = new CDockManager(this);
@@ -225,8 +231,8 @@ MainWindow::MainWindow(QWidget *parent) :
 //============================================================================
 MainWindow::~MainWindow()
 {
-    delete m_editorManager;
-    m_editorManager = nullptr;
+    delete d->m_editorManager;
+    d->m_editorManager = nullptr;
 
     delete d;
 }

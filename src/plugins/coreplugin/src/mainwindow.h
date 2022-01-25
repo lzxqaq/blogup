@@ -20,8 +20,6 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     virtual ~MainWindow();
 
-private:
-    EditorManager *m_editorManager;
 };
 
 #endif // MAINWINDOW_H
