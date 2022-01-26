@@ -6,9 +6,9 @@
 namespace Ui {
 class FileExplorerWidget;
 }
-
 class QFileSystemModel;
 class QSortFilterProxyModel;
+
 
 class FileExplorerWidget : public QWidget
 {
@@ -18,6 +18,8 @@ public:
     explicit FileExplorerWidget(QWidget *parent = 0);
     ~FileExplorerWidget();
 
+    void setPath(const QString &path);
+    QString getPath();
 signals:
     void fileSelected(const QString &filePath);
 
@@ -26,6 +28,7 @@ protected:
 
 private slots:
     void fileOpen(const QModelIndex &index);
+    void oncustomContextMenuRequested(const QPoint p);
 
 private:
     bool initialized;

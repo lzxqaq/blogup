@@ -32,7 +32,7 @@
     <addaction name="actionNewSite"/>
     <addaction name="separator"/>
     <addaction name="actionOpenFile"/>
-    <addaction name="actionOpenSite"/>
+    <addaction name="actionOpenFolder"/>
     <addaction name="separator"/>
     <addaction name="actionSave"/>
     <addaction name="actionAutoSave"/>
@@ -72,30 +72,48 @@
    <property name="text">
     <string>New File</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
   </action>
   <action name="actionNewPost">
    <property name="text">
     <string>New Post</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+N</string>
    </property>
   </action>
   <action name="actionNewSite">
    <property name="text">
     <string>New Site</string>
    </property>
+   <property name="shortcut">
+    <string>Meta+Ctrl+Alt+N</string>
+   </property>
   </action>
   <action name="actionOpenFile">
    <property name="text">
     <string>Open File</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
   </action>
-  <action name="actionOpenSite">
+  <action name="actionOpenFolder">
    <property name="text">
-    <string>Open Site</string>
+    <string>Open Folder</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+O</string>
    </property>
   </action>
   <action name="actionSave">
    <property name="text">
     <string>Save</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
   <action name="actionAutoSave">
@@ -120,25 +138,40 @@
    <property name="text">
     <string>Undo</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
   </action>
   <action name="actionReso">
    <property name="text">
     <string>Redo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Y</string>
    </property>
   </action>
   <action name="actionCut">
    <property name="text">
     <string>Cut</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+X</string>
+   </property>
   </action>
   <action name="actionCopy">
    <property name="text">
     <string>Copy</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
   </action>
   <action name="actionPaste">
    <property name="text">
     <string>Paste</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
    </property>
   </action>
  </widget>

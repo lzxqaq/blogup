@@ -1,11 +1,13 @@
 
-//============================================================================
+
 //                                   INCLUDES
-//============================================================================
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "editormanager/editormanager.h"
 #include "editormanager/customedit.h"
+#include "dockededitor.h"
+#include "fileexplorerwidget.h"
 
 #include <iostream>
 
@@ -34,7 +36,7 @@
 #include <QToolButton>
 #include <QToolBar>
 #include <QPointer>
-
+#include <QFileDialog>
 #include <QMap>
 
 #include "advanceddockingsystem/DockManager.h"
@@ -57,97 +59,56 @@ static QIcon svgIcon(const QString& File)
 }
 
 
-//============================================================================
-/**
- * Private data class pimpl
- */
-class MainWindowPrivate : public QObject
+
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MainWindow)
 {
-public:
-    MainWindow* _this;
-    Ui::MainWindow ui;
-    ads::CDockManager* m_dockManager = nullptr;
-    QPointer<ads::CDockWidget> m_centerDock;
-    EditorManager *m_editorManager;
+    ui->setupUi(this);
+    createActions();
 
-    MainWindowPrivate(MainWindow* _public) : _this(_public) {}
+    ads::CDockManager::setConfigFlag(ads::CDockManager::DockAreaHasUndockButton, false);
+    ads::CDockManager::setConfigFlag(ads::CDockManager::DockAreaHasTabsMenuButton, false);
+    ads::CDockManager::setConfigFlag(ads::CDockManager::DockAreaHideDisabledButtons, true);
+    ads::CDockManager::setConfigFlag(ads::CDockManager::OpaqueSplitterResize, true);
+    ads::CDockManager::setConfigFlag(ads::CDockManager::XmlCompressionEnabled, false);
+    ads::CDockManager::setConfigFlag(ads::CDockManager::FocusHighlighting, true);
 
-    /**
-     * Creates the toolbar actions
-     */
-    void createActions();
+    m_editorManager = new EditorManager(this);
+    m_dockedEditor = new DockedEditor(this);
+    m_dockManager = new ads::CDockManager(this);
+    connect(m_dockedEditor, &DockedEditor::editorCloseRequested, this, [=](CustomEdit *editor) { closeFile(editor); });
 
-    /**
-     * Fill the dock manager with dock widgets
-     */
-    void createContent();
+    connect(m_dockedEditor, &DockedEditor::editorActivated, this, &MainWindow::activateEditor);
 
-    /**
-     * Creates a dock widget with a file system tree view
-     */
-    ads::CDockWidget* createFileSystemTreeDockWidget()
-    {
-        QTreeView* w = new QTreeView();
-        w->setFrameShape(QFrame::NoFrame);
-        QFileSystemModel* m = new QFileSystemModel(w);
+    connect(m_dockedEditor, &DockedEditor::contextMenuRequestedForEditor, this, &MainWindow::tabBarRightClicked);
 
-        m->setRootPath(QDir::currentPath());
-        w->setModel(m);
+    connect(m_dockedEditor, &DockedEditor::titleBarDoubleClicked, this, &MainWindow::newFile);
 
-        w->hideColumn(1);
-        w->hideColumn(2);
-        w->hideColumn(3);
+    setWindowTitle(QApplication::instance()->applicationName());
 
-        w->setHeaderHidden(true);
-
-        ads::CDockWidget* fileWidget = new ads::CDockWidget(QString("Filesystem"));
-        fileWidget->setWidget(w);
-        fileWidget->setFeature(ads::CDockWidget::DockWidgetMovable, false);
-        fileWidget->setFeature(ads::CDockWidget::DockWidgetFloatable, false);
-        fileWidget->setFeature(ads::CDockWidget::DockWidgetClosable, false);
-
-        return fileWidget;
-    }
+    createContent();
+    // Default window geometry - center on screen
+    resize(1280, 720);
+    setGeometry(QStyle::alignedRect(
+        Qt::LeftToRight, Qt::AlignCenter, frameSize(),
+        QGuiApplication::primaryScreen()->availableGeometry()
+        ));
+}
 
 
-    ads::CDockWidget* createCenterWidget()
-    {
-        QWidget *w = new QWidget();
-        ads::CDockWidget* CentralDockWidget = new ads::CDockWidget(QString("Get Started"));
-        CentralDockWidget->setWidget(w);
-        CentralDockWidget->setFeature(ads::CDockWidget::NoTab, true);
 
-        m_dockManager->setCentralWidget(CentralDockWidget);
+MainWindow::~MainWindow()
+{
+    delete m_editorManager;
+    delete m_dockedEditor;
+    delete m_dockManager;
+    m_editorManager = nullptr;
+    m_dockedEditor = nullptr;
+    m_dockManager = nullptr;
+}
 
-        return CentralDockWidget;
-    }
-
-    /**
-     * Creates as imple editor widget
-     */
-    ads::CDockWidget* createEditorWidget()
-    {
-        QPlainTextEdit* w = new QPlainTextEdit();
-        w->setPlaceholderText("file path");
-        w->setStyleSheet("border: none");
-
-        CustomEdit * edit = m_editorManager->createEmptyEditor("123");
-
-        ads::CDockWidget* DockWidget = new ads::CDockWidget(QString("Editor"));
-        DockWidget->setWidget(edit);
-//        DockWidget->setWidget(w);
-        DockWidget->setIcon(svgIcon(":/adsdemo/images/edit.svg"));
-        DockWidget->setFeature(ads::CDockWidget::CustomCloseHandling, true);
-
-        return DockWidget;
-    }
-
-    void createEditor();
-    void onEditorCloseRequested();
-};
-
-//============================================================================
-void MainWindowPrivate::createContent()
+void MainWindow::createContent()
 {
     auto FileSystemWidget = createFileSystemTreeDockWidget();
 
@@ -158,94 +119,247 @@ void MainWindowPrivate::createContent()
     m_dockManager->addDockWidget(ads::LeftDockWidgetArea, FileSystemWidget);
 }
 
-//============================================================================
-void MainWindowPrivate::createActions()
-{
-    connect(ui.actionNewFile, &QAction::triggered, this, &MainWindowPrivate::createEditor);
-}
-//============================================================================
-void MainWindowPrivate::createEditor()
-{
-    auto DockWidget = createEditorWidget();
-    DockWidget->setFeature(ads::CDockWidget::DockWidgetDeleteOnClose, true);
-    DockWidget->setFeature(ads::CDockWidget::DockWidgetForceCloseWithArea, true);
-    connect(DockWidget, SIGNAL(closeRequested()), SLOT(onEditorCloseRequested()));
 
-    ads::CDockAreaWidget* EditorArea = m_centerDock ? m_centerDock->dockAreaWidget() : nullptr;
-    if (EditorArea)
+ads::CDockWidget* MainWindow::createCenterWidget()
+{
+    QWidget *w = new QWidget();
+    ads::CDockWidget* CentralDockWidget = new ads::CDockWidget(QString("Get Started"));
+    CentralDockWidget->setWidget(w);
+    CentralDockWidget->setFeature(ads::CDockWidget::NoTab, true);
+
+    m_dockManager->setCentralWidget(CentralDockWidget);
+
+    return CentralDockWidget;
+}
+
+ads::CDockWidget* MainWindow::createFileSystemTreeDockWidget()
+{
+    FileExplorerWidget *w = new FileExplorerWidget(this);
+
+    connect(w, &FileExplorerWidget::fileSelected, this, &MainWindow::createEditor);
+
+    ads::CDockWidget* fileWidget = new ads::CDockWidget(QString("EXPLORER"));
+    fileWidget->setWidget(w);
+    fileWidget->setFeature(ads::CDockWidget::DockWidgetMovable, false);
+    fileWidget->setFeature(ads::CDockWidget::DockWidgetFloatable, false);
+    fileWidget->setFeature(ads::CDockWidget::DockWidgetClosable, false);
+
+    return fileWidget;
+}
+
+
+void MainWindow::createActions()
+{
+    connect(ui->actionNewFile, &QAction::triggered, this, &MainWindow::newFile);
+}
+
+
+void MainWindow::addEditorWidget(CustomEdit *widget)
+{
+    ads::CDockWidget* dockWidget = new ads::CDockWidget(widget->getName());
+    dockWidget->setWidget(widget);
+    dockWidget->setIcon(svgIcon(":/adsdemo/images/edit.svg"));
+    dockWidget->setFeature(ads::CDockWidget::CustomCloseHandling, true);
+
+    dockWidget->setFeature(ads::CDockWidget::DockWidgetDeleteOnClose, true);
+    dockWidget->setFeature(ads::CDockWidget::DockWidgetForceCloseWithArea, true);
+
+    ads::CDockAreaWidget* editorArea = m_centerDock ? m_centerDock->dockAreaWidget() : nullptr;
+    if (editorArea)
     {
-        m_dockManager->addDockWidget(ads::CenterDockWidgetArea, DockWidget, EditorArea);
-    }
-    else
-    {
-        m_dockManager->addDockWidget(ads::RightDockWidgetArea, DockWidget);
-    }
-}
-
-//============================================================================
-void MainWindowPrivate::onEditorCloseRequested()
-{
-    auto DockWidget = qobject_cast<ads::CDockWidget*>(sender());
-    int Result = QMessageBox::question(_this, "Close Editor", QString("Editor %1 "
-                                                                     "contains unsaved changes? Would you like to close it?")
-                                                                 .arg(DockWidget->windowTitle()));
-    if (QMessageBox::Yes == Result)
-    {
-        DockWidget->closeDockWidget();
+        m_dockManager->addDockWidget(ads::CenterDockWidgetArea, dockWidget, editorArea);
     }
 }
 
 
-//============================================================================
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    d(new MainWindowPrivate(this))
+bool MainWindow::saveFile(CustomEdit *editor)
 {
-    using namespace ads;
-    d->ui.setupUi(this);
-    setWindowTitle(QApplication::instance()->applicationName());
-    d->createActions();
+    if (!editor->modify())
+        return true;
 
-    CDockManager::setConfigFlag(CDockManager::DockAreaHasUndockButton, false);
-    CDockManager::setConfigFlag(CDockManager::DockAreaHasTabsMenuButton, false);
-    CDockManager::setConfigFlag(CDockManager::DockAreaHideDisabledButtons, true);
-    CDockManager::setConfigFlag(CDockManager::OpaqueSplitterResize, true);
-    CDockManager::setConfigFlag(CDockManager::XmlCompressionEnabled, false);
-    CDockManager::setConfigFlag(CDockManager::FocusHighlighting, true);
+    if (!editor->isFile()) {
+        // Switch to the editor and show the saveas dialog
+        m_dockedEditor->switchToEditor(editor);
+        return saveCurrentFileAsDialog();
+    }
+    else {
+        bool didItGetSaved = editor->save();
+        if (didItGetSaved) {
+            return true;
+        }
+    }
 
-    d->m_editorManager = new EditorManager(this);
-
-    // Now create the dock manager and its content
-    d->m_dockManager = new CDockManager(this);
-
-    d->createContent();
-    // Default window geometry - center on screen
-    resize(1280, 720);
-    setGeometry(QStyle::alignedRect(
-        Qt::LeftToRight, Qt::AlignCenter, frameSize(),
-        QGuiApplication::primaryScreen()->availableGeometry()
-        ));
+    return false;
 }
 
 
-//============================================================================
-MainWindow::~MainWindow()
+bool MainWindow::saveCurrentFileAsDialog()
 {
-    delete d->m_editorManager;
-    d->m_editorManager = nullptr;
+    QString dialogDir = QString();
+    auto editor = m_dockedEditor->getCurrentEditor();
 
-    delete d;
+    // Use the file path if possible
+    if (editor->isFile()) {
+        dialogDir = editor->getFilePath();
+    }
+
+    QString fileName = QFileDialog::getSaveFileName(
+        this, // parent
+        Q_NULLPTR, // caption
+        dialogDir, // dir
+        Q_NULLPTR, // filter
+        Q_NULLPTR // selected filter
+        );
+
+    if (fileName.size() == 0) {
+        return false;
+    }
+
+    return saveFileAs(editor, fileName);
 }
 
 
-//============================================================================
+
+bool MainWindow::saveFileAs(CustomEdit *editor, const QString &fileName)
+{
+    bool didItGetSaved = editor->saveAs(fileName);
+
+    return didItGetSaved;
+}
+
+void MainWindow::activateEditor(CustomEdit *editor)
+{
+    checkFileForModification(editor);
+    updateGui(editor);
+
+    emit editorActivated(editor);
+}
+
+void MainWindow::updateGui(CustomEdit *editor)
+{
+//    updateFileStatusBasedUi(editor);
+//    updateSaveStatusBasedUi(editor);
+//    updateEOLBasedUi(editor);
+//    updateEditorPositionBasedUi();
+//    updateSelectionBasedUi(editor);
+//    updateContentBasedUi(editor);
+//    updateLanguageBasedUi(editor);
+}
+
+
+void MainWindow::newFile()
+{
+    static int count = 1;
+
+    m_editorManager->createEmptyEditor(QString("New-%1").arg(count++));
+}
+
+void MainWindow::createEditor(const QString &path)
+{
+    CustomEdit * edit = m_editorManager->createEditorFromFile(path);
+    addEditorWidget(edit);
+}
+
+bool MainWindow::isInInitialState()
+{
+    if (m_dockedEditor->count() == 1) {
+        CustomEdit *editor = m_dockedEditor->getCurrentEditor();
+        return !editor->isFile() && editor->isSavedToDisk();
+    }
+
+    return false;
+}
+
+
+void MainWindow::closeFile(CustomEdit *editor)
+{
+    if (isInInitialState()) {
+        // Don't close the last file
+        return;
+    }
+
+    if(editor->isSavedToDisk()) {
+        editor->close();
+
+        // If the last document was closed, start with a new one
+        if (m_dockedEditor->count() == 0) {
+            newFile();
+        }
+    }
+    else {
+        // The user needs be asked what to do about this file, so switch to it
+        m_dockedEditor->switchToEditor(editor);
+
+        QString message = QString("Save file <b>%1</b>?").arg(editor->getName());
+        auto reply = QMessageBox::question(this, "Save File", message, QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel, QMessageBox::Save);
+
+        if (reply == QMessageBox::Cancel) {
+            return;
+        }
+
+        if (reply == QMessageBox::Save) {
+            bool didFileGetSaved = saveFile(editor);
+
+            // The user might have canceled the save file dialog so just stop now
+            if (didFileGetSaved == false)
+                return;
+        }
+
+        editor->close();
+    }
+}
+
+
+
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-    d->m_dockManager->deleteLater();
+
     QMainWindow::closeEvent(event);
 }
 
-//============================================================================
+void MainWindow::tabBarRightClicked(CustomEdit *editor)
+{
+    // Focus on the correct tab
+    m_dockedEditor->switchToEditor(editor);
+
+    // Create the menu and show it
+    QMenu *menu = new QMenu(this);
+//    menu->addAction(ui->actionClose);
+//    menu->addAction(ui->actionCloseAllExceptActive);
+//    menu->addAction(ui->actionCloseAllToLeft);
+//    menu->addAction(ui->actionCloseAllToRight);
+    menu->addSeparator();
+    menu->addAction(ui->actionSave);
+//    menu->addAction(ui->actionSaveAs);
+//    menu->addAction(ui->actionRename);
+    menu->addSeparator();
+//    menu->addAction(ui->actionReload);
+    menu->addSeparator();
+//    menu->addAction(ui->actionCopyFullPath);
+//    menu->addAction(ui->actionCopyFileName);
+//    menu->addAction(ui->actionCopyFileDirectory);
+    menu->popup(QCursor::pos());
+}
+
+bool MainWindow::checkFileForModification(CustomEdit *editor)
+{
+    auto state = editor->checkFileForStateChange();
+
+    if (state == CustomEdit::NoChange) {
+        return false;
+    }
+    else if (state == CustomEdit::Modified) {
+        editor->reload();
+    }
+    else if (state == CustomEdit::Deleted) {
+    }
+    else if (state == CustomEdit::Restored) {
+    }
+
+    return true;
+}
 
 
-//============================================================================
+
+
+

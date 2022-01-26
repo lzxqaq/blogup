@@ -2,15 +2,20 @@
 #include "ui_fileexplorerwidget.h"
 
 #include <QFileSystemModel>
+#include <QMenu>
 #include <QSortFilterProxyModel>
 
 class FileSortFilterProxyModel : public QSortFilterProxyModel
 {
 public:
-    FileSortFilterProxyModel(QObject *parent = 0) : QSortFilterProxyModel(parent) {}
+    FileSortFilterProxyModel(QObject *parent = 0)
+        : QSortFilterProxyModel(parent)
+    {
+
+    }
 
 protected:
-    bool lessThan(const QModelIndex &left, const QModelIndex &right) const override
+    bool lessThan(const QModelIndex &left, const QModelIndex &right) const
     {
         QFileSystemModel *model = static_cast<QFileSystemModel*>(this->sourceModel());
 
@@ -38,8 +43,12 @@ FileExplorerWidget::FileExplorerWidget(QWidget *parent) :
     sortModel->setSourceModel(model);
 
     ui->fileTreeView->setModel(sortModel);
+    ui->fileTreeView->setHeaderHidden(true);
     ui->fileTreeView->hideColumn(1);
+    ui->fileTreeView->hideColumn(2);
+    ui->fileTreeView->hideColumn(3);
     ui->fileTreeView->sortByColumn(0, Qt::AscendingOrder);
+    ui->fileTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
 
     connect(ui->fileTreeView, SIGNAL(doubleClicked(QModelIndex)),
             SLOT(fileOpen(QModelIndex)));
@@ -56,6 +65,18 @@ void FileExplorerWidget::showEvent(QShowEvent *event)
         model->setRootPath("");
         initialized = true;
     }
+    QWidget::showEvent(event);
+}
+
+
+void FileExplorerWidget::setPath(const QString &path)
+{
+    ui->fileTreeView->setRootIndex(model->index(path));
+}
+
+QString FileExplorerWidget::getPath()
+{
+    return model->filePath(ui->fileTreeView->rootIndex());
 }
 
 void FileExplorerWidget::fileOpen(const QModelIndex &index)
@@ -68,3 +89,7 @@ void FileExplorerWidget::fileOpen(const QModelIndex &index)
     }
 }
 
+void FileExplorerWidget::oncustomContextMenuRequested(const QPoint p)
+{
+
+}
