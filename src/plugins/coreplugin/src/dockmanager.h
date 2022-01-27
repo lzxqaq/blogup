@@ -2,20 +2,18 @@
 #define DOCKEDEDITOR_H
 
 #include <QObject>
+#include <QPointer>
 
-#include "DockManager.h"
+#include "advanceddockingsystem/DockManager.h"
 #include "editormanager/customedit.h"
 
-class DockedEditor : public QObject
+class DockManager : public QObject
 {
     Q_OBJECT
 
-private:
-    ads::CDockManager* m_DockManager = Q_NULLPTR;
-    CustomEdit *currentEditor = Q_NULLPTR;
-
 public:
-    explicit DockedEditor(QWidget *parent);
+    explicit DockManager(QWidget *parent);
+    virtual ~DockManager();
 
     CustomEdit *getCurrentEditor() const;
     ads::CDockAreaWidget *currentDockArea();
@@ -25,6 +23,12 @@ public:
     void switchToEditor(const CustomEdit *editor);
 
     int count() const;
+
+    void initUi();
+
+    ads::CDockWidget* createFileSystemTreeDockWidget();
+
+    ads::CDockWidget *createCenterWidget();
 
 private slots:
     void dockWidgetCloseRequested();
@@ -41,6 +45,14 @@ signals:
 
     void contextMenuRequestedForEditor(CustomEdit *editor);
     void titleBarDoubleClicked();
+
+private:
+    ads::CDockManager* m_dockManager = Q_NULLPTR;
+    CustomEdit *m_currentEditor = Q_NULLPTR;
+    QPointer<ads::CDockWidget> m_centerDock;
+
+    QWidget *m_parent = Q_NULLPTR;
+
 };
 
 #endif // DOCKEDEDITOR_H

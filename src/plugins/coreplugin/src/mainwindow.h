@@ -15,7 +15,7 @@ class CDockManager;
 
 class EditorManager;
 class CustomEdit;
-class DockedEditor;
+class DockManager;
 
 class MainWindow : public QMainWindow
 {
@@ -29,15 +29,6 @@ public:
 
     void createContent();
 
-
-    ads::CDockWidget* createFileSystemTreeDockWidget();
-
-
-    ads::CDockWidget* createCenterWidget();
-
-    void addEditorWidget(CustomEdit *widget);
-
-    void createEditor(const QString &path);
     void closeFile(CustomEdit *editor);
     bool isInInitialState();
 
@@ -51,6 +42,8 @@ public slots:
 
     void updateGui(CustomEdit *editor);
 
+
+    void addEditor(CustomEdit *editor);
 signals:
     void editorActivated(CustomEdit *editor);
 
@@ -66,10 +59,8 @@ private:
 
 
     Ui::MainWindow *ui;
-    ads::CDockManager* m_dockManager = nullptr;
-    QPointer<ads::CDockWidget> m_centerDock;
     EditorManager *m_editorManager;
-    DockedEditor *m_dockedEditor;
+    DockManager *m_dockManager;
 
 };
 

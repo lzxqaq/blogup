@@ -6,7 +6,7 @@
 #include "ui_mainwindow.h"
 #include "editormanager/editormanager.h"
 #include "editormanager/customedit.h"
-#include "dockededitor.h"
+#include "dockmanager.h"
 #include "fileexplorerwidget.h"
 
 #include <iostream>
@@ -48,17 +48,6 @@
 #include "advanceddockingsystem/DockComponentsFactory.h"
 #include "advanceddockingsystem/DockSplitter.h"
 
-/**
- * Helper function to create an SVG icon
- */
-static QIcon svgIcon(const QString& File)
-{
-    QIcon SvgIcon(File);
-    SvgIcon.addPixmap(SvgIcon.pixmap(92));
-    return SvgIcon;
-}
-
-
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -75,15 +64,17 @@ MainWindow::MainWindow(QWidget *parent) :
     ads::CDockManager::setConfigFlag(ads::CDockManager::FocusHighlighting, true);
 
     m_editorManager = new EditorManager(this);
-    m_dockedEditor = new DockedEditor(this);
-    m_dockManager = new ads::CDockManager(this);
-    connect(m_dockedEditor, &DockedEditor::editorCloseRequested, this, [=](CustomEdit *editor) { closeFile(editor); });
+    m_dockManager = new DockManager(this);
+    connect(m_dockManager, &DockManager::editorCloseRequested, this, [=](CustomEdit *editor) { closeFile(editor); });
 
-    connect(m_dockedEditor, &DockedEditor::editorActivated, this, &MainWindow::activateEditor);
+    connect(m_dockManager, &DockManager::editorActivated, this, &MainWindow::activateEditor);
 
-    connect(m_dockedEditor, &DockedEditor::contextMenuRequestedForEditor, this, &MainWindow::tabBarRightClicked);
+    connect(m_dockManager, &DockManager::contextMenuRequestedForEditor, this, &MainWindow::tabBarRightClicked);
 
-    connect(m_dockedEditor, &DockedEditor::titleBarDoubleClicked, this, &MainWindow::newFile);
+    connect(m_dockManager, &DockManager::titleBarDoubleClicked, this, &MainWindow::newFile);
+
+    connect(m_editorManager, &EditorManager::editorCreated, this, &MainWindow::addEditor);
+
 
     setWindowTitle(QApplication::instance()->applicationName());
 
@@ -101,76 +92,20 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete m_editorManager;
-    delete m_dockedEditor;
     delete m_dockManager;
     m_editorManager = nullptr;
-    m_dockedEditor = nullptr;
     m_dockManager = nullptr;
 }
 
 void MainWindow::createContent()
 {
-    auto FileSystemWidget = createFileSystemTreeDockWidget();
-
-    auto DockWidget = createCenterWidget();
-
-    m_centerDock = DockWidget;
-
-    m_dockManager->addDockWidget(ads::LeftDockWidgetArea, FileSystemWidget);
+    m_dockManager->initUi();
 }
-
-
-ads::CDockWidget* MainWindow::createCenterWidget()
-{
-    QWidget *w = new QWidget();
-    ads::CDockWidget* CentralDockWidget = new ads::CDockWidget(QString("Get Started"));
-    CentralDockWidget->setWidget(w);
-    CentralDockWidget->setFeature(ads::CDockWidget::NoTab, true);
-
-    m_dockManager->setCentralWidget(CentralDockWidget);
-
-    return CentralDockWidget;
-}
-
-ads::CDockWidget* MainWindow::createFileSystemTreeDockWidget()
-{
-    FileExplorerWidget *w = new FileExplorerWidget(this);
-
-    connect(w, &FileExplorerWidget::fileSelected, this, &MainWindow::createEditor);
-
-    ads::CDockWidget* fileWidget = new ads::CDockWidget(QString("EXPLORER"));
-    fileWidget->setWidget(w);
-    fileWidget->setFeature(ads::CDockWidget::DockWidgetMovable, false);
-    fileWidget->setFeature(ads::CDockWidget::DockWidgetFloatable, false);
-    fileWidget->setFeature(ads::CDockWidget::DockWidgetClosable, false);
-
-    return fileWidget;
-}
-
 
 void MainWindow::createActions()
 {
     connect(ui->actionNewFile, &QAction::triggered, this, &MainWindow::newFile);
 }
-
-
-void MainWindow::addEditorWidget(CustomEdit *widget)
-{
-    ads::CDockWidget* dockWidget = new ads::CDockWidget(widget->getName());
-    dockWidget->setWidget(widget);
-    dockWidget->setIcon(svgIcon(":/adsdemo/images/edit.svg"));
-    dockWidget->setFeature(ads::CDockWidget::CustomCloseHandling, true);
-
-    dockWidget->setFeature(ads::CDockWidget::DockWidgetDeleteOnClose, true);
-    dockWidget->setFeature(ads::CDockWidget::DockWidgetForceCloseWithArea, true);
-
-    ads::CDockAreaWidget* editorArea = m_centerDock ? m_centerDock->dockAreaWidget() : nullptr;
-    if (editorArea)
-    {
-        m_dockManager->addDockWidget(ads::CenterDockWidgetArea, dockWidget, editorArea);
-    }
-}
-
 
 bool MainWindow::saveFile(CustomEdit *editor)
 {
@@ -179,7 +114,7 @@ bool MainWindow::saveFile(CustomEdit *editor)
 
     if (!editor->isFile()) {
         // Switch to the editor and show the saveas dialog
-        m_dockedEditor->switchToEditor(editor);
+        m_dockManager->switchToEditor(editor);
         return saveCurrentFileAsDialog();
     }
     else {
@@ -196,7 +131,7 @@ bool MainWindow::saveFile(CustomEdit *editor)
 bool MainWindow::saveCurrentFileAsDialog()
 {
     QString dialogDir = QString();
-    auto editor = m_dockedEditor->getCurrentEditor();
+    auto editor = m_dockManager->getCurrentEditor();
 
     // Use the file path if possible
     if (editor->isFile()) {
@@ -243,7 +178,13 @@ void MainWindow::updateGui(CustomEdit *editor)
 //    updateEditorPositionBasedUi();
 //    updateSelectionBasedUi(editor);
 //    updateContentBasedUi(editor);
-//    updateLanguageBasedUi(editor);
+    //    updateLanguageBasedUi(editor);
+}
+
+void MainWindow::addEditor(CustomEdit *editor)
+{
+    // The editor has been entirely configured at this point, so add it to the docked editor
+    m_dockManager->addEditor(editor);
 }
 
 
@@ -254,16 +195,10 @@ void MainWindow::newFile()
     m_editorManager->createEmptyEditor(QString("New-%1").arg(count++));
 }
 
-void MainWindow::createEditor(const QString &path)
-{
-    CustomEdit * edit = m_editorManager->createEditorFromFile(path);
-    addEditorWidget(edit);
-}
-
 bool MainWindow::isInInitialState()
 {
-    if (m_dockedEditor->count() == 1) {
-        CustomEdit *editor = m_dockedEditor->getCurrentEditor();
+    if (m_dockManager->count() == 1) {
+        CustomEdit *editor = m_dockManager->getCurrentEditor();
         return !editor->isFile() && editor->isSavedToDisk();
     }
 
@@ -282,13 +217,13 @@ void MainWindow::closeFile(CustomEdit *editor)
         editor->close();
 
         // If the last document was closed, start with a new one
-        if (m_dockedEditor->count() == 0) {
+        if (m_dockManager->count() == 0) {
             newFile();
         }
     }
     else {
         // The user needs be asked what to do about this file, so switch to it
-        m_dockedEditor->switchToEditor(editor);
+        m_dockManager->switchToEditor(editor);
 
         QString message = QString("Save file <b>%1</b>?").arg(editor->getName());
         auto reply = QMessageBox::question(this, "Save File", message, QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel, QMessageBox::Save);
@@ -320,7 +255,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 void MainWindow::tabBarRightClicked(CustomEdit *editor)
 {
     // Focus on the correct tab
-    m_dockedEditor->switchToEditor(editor);
+    m_dockManager->switchToEditor(editor);
 
     // Create the menu and show it
     QMenu *menu = new QMenu(this);
