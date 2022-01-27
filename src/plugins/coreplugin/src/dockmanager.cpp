@@ -6,6 +6,7 @@
 
 #include "dockededitortitlebar.h"
 #include "fileexplorerwidget.h"
+#include "mainwindow.h"
 
 /**
  * Helper function to create an SVG icon
@@ -46,22 +47,16 @@ DockManager::DockManager(QWidget *parent)
     : QObject(parent)
     , m_parent(parent)
 {
-//    ads::CDockComponentsFactory::setFactory(new DockedEditorComponentsFactory());
+    ads::CDockComponentsFactory::setFactory(new DockedEditorComponentsFactory());
 
-    ads::CDockManager::setConfigFlag(ads::CDockManager::AllTabsHaveCloseButton, true);
-    ads::CDockManager::setConfigFlag(ads::CDockManager::AlwaysShowTabs, true);
-    ads::CDockManager::setConfigFlag(ads::CDockManager::OpaqueSplitterResize, true);
-    ads::CDockManager::setConfigFlag(ads::CDockManager::DragPreviewIsDynamic, true);
-    ads::CDockManager::setConfigFlag(ads::CDockManager::DragPreviewShowsContentPixmap, true);
-    ads::CDockManager::setConfigFlag(ads::CDockManager::DockAreaHasCloseButton, false);
     ads::CDockManager::setConfigFlag(ads::CDockManager::DockAreaHasUndockButton, false);
-    ads::CDockManager::setConfigFlag(ads::CDockManager::DockAreaDynamicTabsMenuButtonVisibility, true);
+    ads::CDockManager::setConfigFlag(ads::CDockManager::DockAreaHasTabsMenuButton, false);
+    ads::CDockManager::setConfigFlag(ads::CDockManager::DockAreaHideDisabledButtons, true);
+    ads::CDockManager::setConfigFlag(ads::CDockManager::OpaqueSplitterResize, true);
+    ads::CDockManager::setConfigFlag(ads::CDockManager::XmlCompressionEnabled, false);
     ads::CDockManager::setConfigFlag(ads::CDockManager::FocusHighlighting, true);
-    ads::CDockManager::setConfigFlag(ads::CDockManager::EqualSplitOnInsertion, true);
-    ads::CDockManager::setConfigFlag(ads::CDockManager::MiddleMouseButtonClosesTab, true);
 
     m_dockManager = new ads::CDockManager(parent);
-    m_dockManager->setStyleSheet("");
 
 //    connect(m_dockManager, &ads::CDockManager::focusedDockWidgetChanged, [=] (ads::CDockWidget* old, ads::CDockWidget* now) {
 //        Q_UNUSED(old)
@@ -103,7 +98,7 @@ ads::CDockWidget *DockManager::createFileSystemTreeDockWidget()
 {
     FileExplorerWidget *w = new FileExplorerWidget(m_parent);
 
-//    connect(w, &FileExplorerWidget::fileSelected, m_parent, &MainWindow::createEditor);
+    connect(w, &FileExplorerWidget::fileSelected, qobject_cast<MainWindow *>(m_parent), &MainWindow::openFile);
 
     ads::CDockWidget* fileWidget = new ads::CDockWidget(QString("EXPLORER"));
     fileWidget->setWidget(w);
@@ -179,6 +174,8 @@ void DockManager::addEditor(CustomEdit *editor)
     // Create the dock widget for the editor
     ads::CDockWidget* dw = new ads::CDockWidget(editor->getName());
     dw->setWidget(editor);
+    dw->setIcon(svgIcon(":/adsdemo/images/edit.svg"));
+
     dw->setFeature(ads::CDockWidget::DockWidgetFeature::DockWidgetDeleteOnClose, true);
     dw->setFeature(ads::CDockWidget::DockWidgetFeature::CustomCloseHandling, true);
     dw->setFeature(ads::CDockWidget::DockWidgetFeature::DockWidgetFloatable, false);
@@ -189,7 +186,6 @@ void DockManager::addEditor(CustomEdit *editor)
     dw->tabWidget()->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(dw->tabWidget(), &QWidget::customContextMenuRequested, [=](const QPoint &pos) {
         Q_UNUSED(pos)
-
         emit contextMenuRequestedForEditor(editor);
     });
 

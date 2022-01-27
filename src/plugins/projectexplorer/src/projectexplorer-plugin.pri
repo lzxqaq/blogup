@@ -4,5 +4,6 @@ HEADERS += \
 INCLUDEPATH += $$PWD
 
 SOURCES += \
+    $$PWD/projectexplorerplugin.cpp
 
 FORMS += \

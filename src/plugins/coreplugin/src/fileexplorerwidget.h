@@ -2,10 +2,9 @@
 #define FILEEXPLORERWIDGET_H
 
 #include <QWidget>
+#include <QTreeView>
+#include <QStackedLayout>
 
-namespace Ui {
-class FileExplorerWidget;
-}
 class QFileSystemModel;
 class QSortFilterProxyModel;
 
@@ -30,11 +29,18 @@ private slots:
     void fileOpen(const QModelIndex &index);
     void oncustomContextMenuRequested(const QPoint p);
 
+    void openExplorer();
+    void closeExplorer();
+
+    void setRootDirectory(const QString &directory);
+
 private:
-    bool initialized;
-    Ui::FileExplorerWidget *ui;
-    QFileSystemModel *model;
-    QSortFilterProxyModel *sortModel;
+    bool initialized = false;
+    QFileSystemModel *m_fileSystemModel = nullptr;
+    QSortFilterProxyModel *m_sortProxyModel = nullptr;
+    QTreeView *m_fileTreeView = nullptr;
+    QWidget* m_welcomeWidget = nullptr;
+    QStackedLayout *m_stackedLayout = nullptr;
 };
 
 #endif // FILEEXPLORERWIDGET_H

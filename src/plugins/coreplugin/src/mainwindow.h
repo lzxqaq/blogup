@@ -33,7 +33,11 @@ public:
     bool isInInitialState();
 
 public slots:
+
     void newFile();
+    void openFile(const QString &filePath);
+    void openFileDialog();
+
     bool saveFile(CustomEdit *editor);
     bool saveCurrentFileAsDialog();
     bool saveFileAs(CustomEdit *editor, const QString &fileName);

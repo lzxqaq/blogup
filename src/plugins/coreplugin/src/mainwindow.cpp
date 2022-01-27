@@ -105,6 +105,8 @@ void MainWindow::createContent()
 void MainWindow::createActions()
 {
     connect(ui->actionNewFile, &QAction::triggered, this, &MainWindow::newFile);
+    connect(ui->actionOpenFile, &QAction::triggered, this, &MainWindow::openFileDialog);
+
 }
 
 bool MainWindow::saveFile(CustomEdit *editor)
@@ -127,6 +129,20 @@ bool MainWindow::saveFile(CustomEdit *editor)
     return false;
 }
 
+void MainWindow::openFileDialog()
+{
+    QString fileName = QFileDialog::getOpenFileName(
+        this, // parent
+        Q_NULLPTR, // caption
+        Q_NULLPTR, // dir
+        Q_NULLPTR, // filter
+        Q_NULLPTR // selected filter
+        );
+    if (!fileName.isEmpty())
+    {
+        openFile(fileName);
+    }
+}
 
 bool MainWindow::saveCurrentFileAsDialog()
 {
@@ -193,6 +209,30 @@ void MainWindow::newFile()
     static int count = 1;
 
     m_editorManager->createEmptyEditor(QString("New-%1").arg(count++));
+}
+
+void MainWindow::openFile(const QString &filePath)
+{
+    CustomEdit *editor = m_editorManager->getEditorByFilePath(filePath);
+    if (editor == Q_NULLPTR) {
+        QFileInfo fileInfo(filePath);
+
+        if (!fileInfo.isFile()) {
+            auto reply = QMessageBox::question(this, "Create File", QString("<b>%1</b> does not exist. Do you want to create it?").arg(filePath));
+
+            if (reply == QMessageBox::Yes) {
+                editor = m_editorManager->createEditorFromFile(filePath);
+            }
+            else {
+            }
+        }
+        else {
+            editor = m_editorManager->createEditorFromFile(filePath);
+        }
+    }
+    if (editor != Q_NULLPTR) {
+        m_dockManager->switchToEditor(editor);
+    }
 }
 
 bool MainWindow::isInInitialState()
