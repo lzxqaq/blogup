@@ -64,7 +64,7 @@ CustomEdit *EditorManager::cloneEditor(CustomEdit *editor)
 
     manageEditor(editor);
 
-    setupEditor(clonedEditor);
+//    setupEditor(clonedEditor);
 
     emit editorCreated(clonedEditor);
 

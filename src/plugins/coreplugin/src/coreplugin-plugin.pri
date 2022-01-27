@@ -7,8 +7,8 @@ FORMS += \
 
 HEADERS += \
     $$PWD/coreplugin.h \
-    $$PWD/dockededitor.h \
     $$PWD/dockededitortitlebar.h \
+    $$PWD/dockmanager.h \
     $$PWD/mainwindow.h \
     $$PWD/fileexplorerwidget.h \
     $$PWD/editormanager/customedit.h \
@@ -16,7 +16,7 @@ HEADERS += \
 
 SOURCES += \
     $$PWD/coreplugin.cpp \
-    $$PWD/dockededitor.cpp \
+    $$PWD/dockmanager.cpp \
     $$PWD/mainwindow.cpp \
     $$PWD/fileexplorerwidget.cpp \
     $$PWD/editormanager/customedit.cpp \

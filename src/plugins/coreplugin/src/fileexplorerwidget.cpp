@@ -4,6 +4,87 @@
 #include <QFileSystemModel>
 #include <QMenu>
 #include <QSortFilterProxyModel>
+#include <QPushButton>
+#include <QFileDialog>
+
+static void showOnlyFirstColumn(QTreeView *view)
+{
+    const int columnCount = view->header()->count();
+    for (int i = 1; i < columnCount; ++i)
+        view->setColumnHidden(i, true);
+}
+
+// FolderNavigationModel: Shows path as tooltip.
+class FolderNavigationModel : public QFileSystemModel
+{
+public:
+    enum Roles {
+        IsFolderRole = Qt::UserRole + 50 // leave some gap for the custom roles in QFileSystemModel
+    };
+
+    explicit FolderNavigationModel(QObject *parent = nullptr);
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const final;
+    Qt::DropActions supportedDragActions() const final;
+    Qt::ItemFlags flags(const QModelIndex &index) const final;
+};
+
+
+// Sorts folders on top if wanted
+class FolderSortProxyModel : public QSortFilterProxyModel
+{
+public:
+    FolderSortProxyModel(QObject *parent = nullptr);
+
+protected:
+    bool lessThan(const QModelIndex &source_left, const QModelIndex &source_right) const override;
+};
+
+FolderNavigationModel::FolderNavigationModel(QObject *parent) : QFileSystemModel(parent)
+{ }
+
+QVariant FolderNavigationModel::data(const QModelIndex &index, int role) const
+{
+    if (role == Qt::ToolTipRole)
+        return QDir::toNativeSeparators(QDir::cleanPath(filePath(index)));
+    else if (role == IsFolderRole)
+        return isDir(index);
+    else
+        return QFileSystemModel::data(index, role);
+}
+
+Qt::DropActions FolderNavigationModel::supportedDragActions() const
+{
+    return Qt::MoveAction;
+}
+
+Qt::ItemFlags FolderNavigationModel::flags(const QModelIndex &index) const
+{
+    if (index.isValid() && !fileInfo(index).isRoot())
+        return QFileSystemModel::flags(index) | Qt::ItemIsEditable;
+    return QFileSystemModel::flags(index);
+}
+
+
+FolderSortProxyModel::FolderSortProxyModel(QObject *parent)
+    : QSortFilterProxyModel(parent)
+{
+}
+
+bool FolderSortProxyModel::lessThan(const QModelIndex &source_left, const QModelIndex &source_right) const
+{
+    const QAbstractItemModel *src = sourceModel();
+    if (sortRole() == FolderNavigationModel::IsFolderRole) {
+        const bool leftIsFolder = src->data(source_left, FolderNavigationModel::IsFolderRole)
+                                      .toBool();
+        const bool rightIsFolder = src->data(source_right, FolderNavigationModel::IsFolderRole)
+                                       .toBool();
+        if (leftIsFolder != rightIsFolder)
+            return leftIsFolder;
+    }
+    const QString leftName = src->data(source_left, QFileSystemModel::FileNameRole).toString();
+    const QString rightName = src->data(source_right, QFileSystemModel::FileNameRole).toString();
+    return QString::compare(leftName, rightName, Qt::CaseSensitive) < 0;
+}
 
 class FileSortFilterProxyModel : public QSortFilterProxyModel
 {
@@ -32,56 +113,69 @@ protected:
 
 FileExplorerWidget::FileExplorerWidget(QWidget *parent) :
     QWidget(parent),
-    initialized(false),
-    ui(new Ui::FileExplorerWidget),
-    model(new QFileSystemModel(this)),
-    sortModel(new FileSortFilterProxyModel(this))
+    m_fileSystemModel(new FolderNavigationModel(this)),
+    m_sortProxyModel(new FolderSortProxyModel(m_fileSystemModel))
 {
-    ui->setupUi(this);
 
-    sortModel->setDynamicSortFilter(true);
-    sortModel->setSourceModel(model);
+    m_sortProxyModel->setSourceModel(m_fileSystemModel);
+    m_sortProxyModel->setSortRole(FolderNavigationModel::IsFolderRole);
+    m_sortProxyModel->sort(0);
 
-    ui->fileTreeView->setModel(sortModel);
-    ui->fileTreeView->setHeaderHidden(true);
-    ui->fileTreeView->hideColumn(1);
-    ui->fileTreeView->hideColumn(2);
-    ui->fileTreeView->hideColumn(3);
-    ui->fileTreeView->sortByColumn(0, Qt::AscendingOrder);
-    ui->fileTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
+    m_stackedLayout = new QStackedLayout(this);
 
-    connect(ui->fileTreeView, SIGNAL(doubleClicked(QModelIndex)),
+    this->setLayout(m_stackedLayout);
+
+    m_welcomeWidget = new QWidget(this);
+    auto welcomeLayout = new QVBoxLayout(m_welcomeWidget);
+    welcomeLayout->addStretch();
+    QPushButton* openButton = new QPushButton("Open project");
+    welcomeLayout->addWidget( openButton );
+    welcomeLayout->addStretch();
+    connect(openButton, &QPushButton::clicked, this, &FileExplorerWidget::openExplorer);
+
+    m_fileTreeView = new QTreeView(this);
+
+    m_fileTreeView->setModel(m_sortProxyModel);
+    m_fileTreeView->setHeaderHidden(true);
+    m_fileTreeView->sortByColumn(0, Qt::AscendingOrder);
+    m_fileTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
+    m_fileTreeView->setSortingEnabled(true);
+    m_fileTreeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    showOnlyFirstColumn(m_fileTreeView);
+
+    m_stackedLayout->addWidget(m_welcomeWidget);
+    m_stackedLayout->addWidget(m_fileTreeView);
+
+    connect(m_fileTreeView, SIGNAL(doubleClicked(QModelIndex)),
             SLOT(fileOpen(QModelIndex)));
 }
 
 FileExplorerWidget::~FileExplorerWidget()
 {
-    delete ui;
 }
 
 void FileExplorerWidget::showEvent(QShowEvent *event)
 {
     if (!initialized) {
-        model->setRootPath("");
+        m_fileSystemModel->setRootPath("C:/");
         initialized = true;
     }
     QWidget::showEvent(event);
 }
 
-
 void FileExplorerWidget::setPath(const QString &path)
 {
-    ui->fileTreeView->setRootIndex(model->index(path));
+    m_fileTreeView->setRootIndex(m_fileSystemModel->index(path));
 }
 
 QString FileExplorerWidget::getPath()
 {
-    return model->filePath(ui->fileTreeView->rootIndex());
+    return m_fileSystemModel->filePath(m_fileTreeView->rootIndex());
 }
 
 void FileExplorerWidget::fileOpen(const QModelIndex &index)
 {
-    QFileInfo info = model->fileInfo(sortModel->mapToSource(index));
+    QFileInfo info = m_fileSystemModel->fileInfo(m_sortProxyModel->mapToSource(index));
     if (info.isFile()) {
         const QString filePath = info.filePath();
 
@@ -93,3 +187,28 @@ void FileExplorerWidget::oncustomContextMenuRequested(const QPoint p)
 {
 
 }
+
+void FileExplorerWidget::openExplorer()
+{
+    QString dir = QFileDialog::getExistingDirectory(this);
+    if (!dir.isEmpty())
+    {
+        setRootDirectory(dir);
+        m_stackedLayout->setCurrentWidget(m_fileTreeView);
+    }
+}
+
+void FileExplorerWidget::closeExplorer()
+{
+    m_fileSystemModel->setRootPath("");
+    m_fileTreeView->setRootIndex(m_fileSystemModel->index(""));
+    m_stackedLayout->setCurrentWidget(m_welcomeWidget);
+}
+
+void FileExplorerWidget::setRootDirectory(const QString &directory)
+{
+    const QModelIndex index = m_sortProxyModel->mapFromSource(
+        m_fileSystemModel->setRootPath(directory));
+    m_fileTreeView->setRootIndex(index);
+}
+
