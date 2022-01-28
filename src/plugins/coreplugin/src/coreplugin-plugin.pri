@@ -3,7 +3,9 @@ INCLUDEPATH += $$PWD
 DISTFILES += Core.json
 
 FORMS += \
-    $$PWD/mainwindow.ui
+    $$PWD/mainwindow.ui \
+    $$PWD/newpostdialog.ui \
+    $$PWD/newsitedialog.ui
 
 HEADERS += \
     $$PWD/coreplugin.h \
