@@ -5,7 +5,7 @@ TEMPLATE  = subdirs
 SUBDIRS   = \
     coreplugin \
     texteditor \
-    projectexplorer
+    blogplugin
 
 for(p, SUBDIRS) {
     QTC_PLUGIN_DEPENDS =

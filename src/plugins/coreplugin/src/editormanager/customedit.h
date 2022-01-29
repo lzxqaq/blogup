@@ -11,8 +11,9 @@
 #include "ScintillaEdit.h"
 #include "Scintilla.h"
 
+#include "../core_global.h"
 
-class CustomEdit : public ScintillaEdit
+class CORE_EXPORT CustomEdit : public ScintillaEdit
 {
     Q_OBJECT
 

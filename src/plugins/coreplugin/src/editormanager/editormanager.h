@@ -4,10 +4,12 @@
 #include <QObject>
 #include <QPointer>
 
+#include "../core_global.h"
+
 
 class CustomEdit;
 
-class EditorManager : public QObject
+class CORE_EXPORT EditorManager : public QObject
 {
     Q_OBJECT
 

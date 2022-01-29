@@ -3,7 +3,9 @@
 
 #include <DockAreaTitleBar.h>
 
-class DockedEditorTitleBar : public ads::CDockAreaTitleBar
+#include "core_global.h"
+
+class CORE_EXPORT DockedEditorTitleBar : public ads::CDockAreaTitleBar
 {
     Q_OBJECT
 

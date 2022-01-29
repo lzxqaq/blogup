@@ -1,7 +1,7 @@
 ﻿#include <QApplication>
 
-#include "extensionsystem/pluginmanager.h"
-#include "extensionsystem/iplugin.h"
+#include "pluginmanager.h"
+#include "iplugin.h"
 
 const char corePluginNameC[] = "Core";
 

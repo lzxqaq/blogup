@@ -8,8 +8,9 @@
 class QFileSystemModel;
 class QSortFilterProxyModel;
 
+#include "core_global.h"
 
-class FileExplorerWidget : public QWidget
+class CORE_EXPORT FileExplorerWidget : public QWidget
 {
     Q_OBJECT
 

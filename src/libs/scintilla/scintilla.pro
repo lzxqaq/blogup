@@ -1,3 +1,3 @@
 include(../../library.pri)
-include(scintilla.pri)
+include(scintilla-lib.pri)
 

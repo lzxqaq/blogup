@@ -1,2 +1,2 @@
 include(../../library.pri)
-include(singleapplication.pri)
+include(singleapplication-lib.pri)

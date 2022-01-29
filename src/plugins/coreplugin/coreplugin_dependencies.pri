@@ -4,4 +4,5 @@ QTC_LIB_DEPENDS += \
     advanceddockingsystem \
     uchardet \
     scintilla \
-    extensionsystem
+    extensionsystem \
+    utils

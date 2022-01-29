@@ -1,2 +1,2 @@
 include(../../library.pri)
-include(extensionsystem.pri)
+include(src/extensionsystem-lib.pri)

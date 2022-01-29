@@ -7,7 +7,9 @@
 #include "advanceddockingsystem/DockManager.h"
 #include "editormanager/customedit.h"
 
-class DockManager : public QObject
+#include "core_global.h"
+
+class CORE_EXPORT DockManager : public QObject
 {
     Q_OBJECT
 

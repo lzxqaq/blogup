@@ -8,7 +8,8 @@ SUBDIRS =   \
     singleapplication \
     scintilla \
     uchardet \
-    extensionsystem
+    extensionsystem \
+    utils
 
 
 for(l, SUBDIRS) {

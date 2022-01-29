@@ -1,2 +1,2 @@
 include(../../library.pri)
-include(uchardet.pri)
+include(src/uchardet-lib.pri)

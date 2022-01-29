@@ -2,7 +2,7 @@
 #define COREPLUGIN_H
 
 #include <QObject>
-#include "extensionsystem/iplugin.h"
+#include "iplugin.h"
 
 class MainWindow;
 

@@ -23,4 +23,4 @@
 include(../../library.pri)
 
 #TEMPLATE = lib
-include ($$PWD/qsimpleupdater.pri)
+include ($$PWD/qsimpleupdater-lib.pri)
