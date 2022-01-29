@@ -24,5 +24,4 @@ SOURCES += \
     $$PWD/editormanager/customedit.cpp \
     $$PWD/editormanager/editormanager.cpp
 
-FORMS += \
-    $$PWD/fileexplorerwidget.ui
+FORMS +=

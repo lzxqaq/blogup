@@ -75,6 +75,7 @@ void PluginManager::loadPlugin(const QString &filepath)
         if(plugin)
         {
             managerPrivate->m_loaders.insert(filepath, loader);
+            plugin->initialize();
             //plugin->connect_information(this, SLOT(onPluginInformation(QString&)), true);
 
         }

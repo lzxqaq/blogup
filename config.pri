@@ -10,9 +10,9 @@ isEmpty(BLOGUP_DISPLAY_VERSION): BLOGUP_DISPLAY_VERSION = 1.1.0
 isEmpty(BLOGUP_COPYRIGHT_YEAR):  BLOGUP_COPYRIGHT_YEAR = 2021
 isEmpty(BINARY_ARTIFACTS_BRANCH):   BINARY_ARTIFACTS_BRANCH = 1.1
 
-isEmpty(IDE_DISPLAY_NAME):          IDE_DISPLAY_NAME = carmes
-isEmpty(IDE_ID):                    IDE_ID = carmes
-isEmpty(IDE_CASED_ID):              IDE_CASED_ID = Carmes
+isEmpty(IDE_DISPLAY_NAME):          IDE_DISPLAY_NAME = BlogUp
+isEmpty(IDE_ID):                    IDE_ID = BlogUp
+isEmpty(IDE_CASED_ID):              IDE_CASED_ID = BlogUp
 
 isEmpty(PRODUCT_BUNDLE_IDENTIFIER): PRODUCT_BUNDLE_IDENTIFIER = org.qt-project.$$IDE_ID
 

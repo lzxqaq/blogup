@@ -58,20 +58,23 @@ DockManager::DockManager(QWidget *parent)
 
     m_dockManager = new ads::CDockManager(parent);
 
-//    connect(m_dockManager, &ads::CDockManager::focusedDockWidgetChanged, [=] (ads::CDockWidget* old, ads::CDockWidget* now) {
-//        Q_UNUSED(old)
+    connect(m_dockManager, &ads::CDockManager::focusedDockWidgetChanged, [=] (ads::CDockWidget* old, ads::CDockWidget* now) {
+        Q_UNUSED(old)
 
-//        CustomEdit *editor = qobject_cast<CustomEdit *>(now->widget());
+        CustomEdit *editor = qobject_cast<CustomEdit *>(now->widget());
 
-//        m_currentEditor = editor;
-//        editor->grabFocus();
-//        emit editorActivated(editor);
-//    });
+        if (editor != nullptr)
+        {
+            m_currentEditor = editor;
+            editor->grabFocus();
+            emit editorActivated(editor);
+        }
+    });
 
-//    connect(m_dockManager, &ads::CDockManager::dockAreaCreated, [=](ads::CDockAreaWidget* DockArea) {
-//        DockedEditorTitleBar *titleBar = qobject_cast<DockedEditorTitleBar *>(DockArea->titleBar());
-//        connect(titleBar, &DockedEditorTitleBar::doubleClicked, this, &DockManager::titleBarDoubleClicked);
-//    });
+    connect(m_dockManager, &ads::CDockManager::dockAreaCreated, [=](ads::CDockAreaWidget* DockArea) {
+        DockedEditorTitleBar *titleBar = qobject_cast<DockedEditorTitleBar *>(DockArea->titleBar());
+        connect(titleBar, &DockedEditorTitleBar::doubleClicked, this, &DockManager::titleBarDoubleClicked);
+    });
 }
 
 DockManager::~DockManager()
@@ -99,6 +102,8 @@ ads::CDockWidget *DockManager::createFileSystemTreeDockWidget()
     FileExplorerWidget *w = new FileExplorerWidget(m_parent);
 
     connect(w, &FileExplorerWidget::fileSelected, qobject_cast<MainWindow *>(m_parent), &MainWindow::openFile);
+    connect(qobject_cast<MainWindow *>(m_parent), &MainWindow::openFolder, w, &FileExplorerWidget::openExplorer);
+    connect(qobject_cast<MainWindow *>(m_parent), &MainWindow::closeFolder, w, &FileExplorerWidget::closeExplorer);
 
     ads::CDockWidget* fileWidget = new ads::CDockWidget(QString("EXPLORER"));
     fileWidget->setWidget(w);
@@ -125,7 +130,8 @@ QVector<CustomEdit *> DockManager::editors() const
 {
     QVector<CustomEdit *> editors;
     for (const ads::CDockWidget* dockWidget : m_dockManager->dockWidgetsMap()) {
-        editors.append(qobject_cast<CustomEdit *>(dockWidget->widget()));
+        auto editor = qobject_cast<CustomEdit *>(dockWidget->widget());
+        if (editor != nullptr) editors.append(editor);
     }
 
     return editors;

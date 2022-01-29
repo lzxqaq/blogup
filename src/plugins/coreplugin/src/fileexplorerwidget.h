@@ -19,8 +19,13 @@ public:
 
     void setPath(const QString &path);
     QString getPath();
+
 signals:
     void fileSelected(const QString &filePath);
+
+public slots:
+    void openExplorer();
+    void closeExplorer();
 
 protected:
     void showEvent(QShowEvent *event);
@@ -29,8 +34,6 @@ private slots:
     void fileOpen(const QModelIndex &index);
     void oncustomContextMenuRequested(const QPoint p);
 
-    void openExplorer();
-    void closeExplorer();
 
     void setRootDirectory(const QString &directory);
 

@@ -7,7 +7,6 @@
 #include "editormanager/editormanager.h"
 #include "editormanager/customedit.h"
 #include "dockmanager.h"
-#include "fileexplorerwidget.h"
 
 #include <iostream>
 
@@ -106,6 +105,42 @@ void MainWindow::createActions()
 {
     connect(ui->actionNewFile, &QAction::triggered, this, &MainWindow::newFile);
     connect(ui->actionOpenFile, &QAction::triggered, this, &MainWindow::openFileDialog);
+    connect(ui->actionOpenFolder, &QAction::triggered, this, &MainWindow::openFolder);
+
+    connect(ui->actionSave, &QAction::triggered, this, &MainWindow::saveCurrentFile);
+
+    connect(ui->actionCloseEditor, &QAction::triggered, this, &MainWindow::closeCurrentFile);
+    connect(ui->actionCloseFolder, &QAction::triggered, this, &MainWindow::closeFolder);
+    connect(ui->actionCloseAll, &QAction::triggered, this, &MainWindow::closeAllFile);
+
+    connect(ui->actionExit, &QAction::triggered, this, &MainWindow::close);
+
+
+    connect(ui->actionUndo, &QAction::triggered, [=]() { m_dockManager->getCurrentEditor()->undo();});
+    connect(ui->actionRedo, &QAction::triggered, [=]() { m_dockManager->getCurrentEditor()->redo();});
+    connect(ui->actionCut, &QAction::triggered, [=]() {
+        if (m_dockManager->getCurrentEditor()->selectionEmpty()) {
+            m_dockManager->getCurrentEditor()->copyAllowLine();
+            m_dockManager->getCurrentEditor()->lineDelete();
+        }
+        else {
+            m_dockManager->getCurrentEditor()->cut();
+        }
+    });
+    connect(ui->actionCopy, &QAction::triggered, [=]() {
+        m_dockManager->getCurrentEditor()->copyAllowLine();
+    });
+    connect(ui->actionDelete, &QAction::triggered, [=]() { m_dockManager->getCurrentEditor()->clear();});
+    connect(ui->actionPaste, &QAction::triggered, [=]() { m_dockManager->getCurrentEditor()->paste();});
+
+
+    // TODO: action
+    ui->actionAutoSave->setEnabled(false);
+    ui->actionNewPost->setEnabled(false);
+    ui->actionNewSite->setEnabled(false);
+
+    ui->actionExportHTML->setEnabled(false);
+    ui->actionExportPDF->setEnabled(false);
 
 }
 
@@ -299,8 +334,8 @@ void MainWindow::tabBarRightClicked(CustomEdit *editor)
 
     // Create the menu and show it
     QMenu *menu = new QMenu(this);
-//    menu->addAction(ui->actionClose);
-//    menu->addAction(ui->actionCloseAllExceptActive);
+    menu->addAction(ui->actionCloseEditor);
+    menu->addAction(ui->actionCloseAll);
 //    menu->addAction(ui->actionCloseAllToLeft);
 //    menu->addAction(ui->actionCloseAllToRight);
     menu->addSeparator();
@@ -335,6 +370,23 @@ bool MainWindow::checkFileForModification(CustomEdit *editor)
 }
 
 
+bool MainWindow::saveCurrentFile()
+{
+    return saveFile(m_dockManager->getCurrentEditor());
+}
 
+bool MainWindow::closeCurrentFile()
+{
+    closeFile(m_dockManager->getCurrentEditor());
+}
+
+bool MainWindow::closeAllFile()
+{
+    closeFile(m_dockManager->getCurrentEditor());
+    for (auto editor : m_dockManager->editors())
+    {
+        closeFile(editor);
+    }
+}
 
 

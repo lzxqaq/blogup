@@ -24,11 +24,6 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     virtual ~MainWindow();
 
-
-    void createActions();
-
-    void createContent();
-
     void closeFile(CustomEdit *editor);
     bool isInInitialState();
 
@@ -42,6 +37,11 @@ public slots:
     bool saveCurrentFileAsDialog();
     bool saveFileAs(CustomEdit *editor, const QString &fileName);
 
+    bool saveCurrentFile();
+
+    bool closeCurrentFile();
+    bool closeAllFile();
+
     void activateEditor(CustomEdit *editor);
 
     void updateGui(CustomEdit *editor);
@@ -50,6 +50,8 @@ public slots:
     void addEditor(CustomEdit *editor);
 signals:
     void editorActivated(CustomEdit *editor);
+    void openFolder();
+    void closeFolder();
 
 protected:
     virtual void closeEvent(QCloseEvent* event) override;
@@ -57,7 +59,10 @@ protected:
 private slots:
     void tabBarRightClicked(CustomEdit *editor);
 
+
 private:
+    void createActions();
+    void createContent();
 
     bool checkFileForModification(CustomEdit *editor);
 

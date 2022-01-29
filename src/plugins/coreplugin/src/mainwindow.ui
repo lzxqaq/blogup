@@ -20,7 +20,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>25</height>
+     <height>17</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -39,18 +39,25 @@
     <addaction name="separator"/>
     <addaction name="actionExportHTML"/>
     <addaction name="actionExportPDF"/>
+    <addaction name="separator"/>
+    <addaction name="actionCloseEditor"/>
+    <addaction name="actionCloseFolder"/>
+    <addaction name="actionCloseAll"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
      <string>Edit</string>
     </property>
     <addaction name="actionUndo"/>
-    <addaction name="actionReso"/>
+    <addaction name="actionRedo"/>
     <addaction name="separator"/>
     <addaction name="actionCut"/>
     <addaction name="actionCopy"/>
     <addaction name="actionPaste"/>
     <addaction name="separator"/>
+    <addaction name="actionDelete"/>
    </widget>
    <widget class="QMenu" name="menuSetting">
     <property name="title">
@@ -142,7 +149,7 @@
     <string>Ctrl+Z</string>
    </property>
   </action>
-  <action name="actionReso">
+  <action name="actionRedo">
    <property name="text">
     <string>Redo</string>
    </property>
@@ -172,6 +179,34 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+V</string>
+   </property>
+  </action>
+  <action name="actionCloseEditor">
+   <property name="text">
+    <string>Close Editor</string>
+   </property>
+  </action>
+  <action name="actionCloseFolder">
+   <property name="text">
+    <string>Close Folder</string>
+   </property>
+  </action>
+  <action name="actionCloseAll">
+   <property name="text">
+    <string>Close All</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionDelete">
+   <property name="text">
+    <string>Delete</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
    </property>
   </action>
  </widget>
