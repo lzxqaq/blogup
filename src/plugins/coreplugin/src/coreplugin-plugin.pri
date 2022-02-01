@@ -22,6 +22,8 @@ HEADERS += \
     $$PWD/core_global.h \
     $$PWD/coreconstants.h \
     $$PWD/coreplugin.h \
+    $$PWD/dialog/newpostdialog.h \
+    $$PWD/dialog/newsitedialog.h \
     $$PWD/dockededitortitlebar.h \
     $$PWD/dockmanager.h \
     $$PWD/icontext.h \
@@ -32,12 +34,13 @@ HEADERS += \
 
 SOURCES += \
     $$PWD/actionmanager/actioncontainer.cpp \
+    $$PWD/actionmanager/actioncontainer_p.cpp \
     $$PWD/actionmanager/actionmanager.cpp \
+    $$PWD/actionmanager/actionmanager_p.cpp \
     $$PWD/actionmanager/command.cpp \
-    $$PWD/actionmanager/commandbutton.cpp \
-    $$PWD/actionmanager/commandmappings.cpp \
-    $$PWD/actionmanager/commandsfile.cpp \
     $$PWD/coreplugin.cpp \
+    $$PWD/dialog/newpostdialog.cpp \
+    $$PWD/dialog/newsitedialog.cpp \
     $$PWD/dockmanager.cpp \
     $$PWD/mainwindow.cpp \
     $$PWD/fileexplorerwidget.cpp \

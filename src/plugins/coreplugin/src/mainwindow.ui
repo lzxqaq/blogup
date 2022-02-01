@@ -69,8 +69,18 @@
      <string>About</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menuGit">
+    <property name="title">
+     <string>Git</string>
+    </property>
+    <addaction name="actionPull"/>
+    <addaction name="actionPush"/>
+    <addaction name="separator"/>
+    <addaction name="actionConfig"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
+   <addaction name="menuGit"/>
    <addaction name="menuSetting"/>
    <addaction name="menuAbout"/>
   </widget>
@@ -207,6 +217,21 @@
    </property>
    <property name="shortcut">
     <string>Del</string>
+   </property>
+  </action>
+  <action name="actionPull">
+   <property name="text">
+    <string>Pull</string>
+   </property>
+  </action>
+  <action name="actionPush">
+   <property name="text">
+    <string>Push</string>
+   </property>
+  </action>
+  <action name="actionConfig">
+   <property name="text">
+    <string>Config</string>
    </property>
   </action>
  </widget>

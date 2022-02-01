@@ -47,6 +47,9 @@
 #include "advanceddockingsystem/DockComponentsFactory.h"
 #include "advanceddockingsystem/DockSplitter.h"
 
+#include "dialog/newpostdialog.h"
+#include "dialog/newsitedialog.h"
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -136,8 +139,13 @@ void MainWindow::createActions()
 
     // TODO: action
     ui->actionAutoSave->setEnabled(false);
-    ui->actionNewPost->setEnabled(false);
-    ui->actionNewSite->setEnabled(false);
+
+
+//    ui->actionNewPost->setEnabled(false);
+//    ui->actionNewSite->setEnabled(false);
+
+    connect(ui->actionNewPost, &QAction::triggered, this, &MainWindow::newPost);
+    connect(ui->actionNewSite, &QAction::triggered, this, &MainWindow::newSite);
 
     ui->actionExportHTML->setEnabled(false);
     ui->actionExportPDF->setEnabled(false);
@@ -236,6 +244,18 @@ void MainWindow::addEditor(CustomEdit *editor)
 {
     // The editor has been entirely configured at this point, so add it to the docked editor
     m_dockManager->addEditor(editor);
+}
+
+void MainWindow::newSite()
+{
+    NewSiteDialog *dialog = new NewSiteDialog(this);
+    dialog->exec();
+}
+
+void MainWindow::newPost()
+{
+    NewPostDialog *dialog = new NewPostDialog(this);
+    dialog->exec();
 }
 
 
@@ -389,4 +409,22 @@ bool MainWindow::closeAllFile()
     }
 }
 
+
+
+void MainWindow::on_actionPull_triggered()
+{
+
+}
+
+
+void MainWindow::on_actionPush_triggered()
+{
+
+}
+
+
+void MainWindow::on_actionConfig_triggered()
+{
+
+}
 

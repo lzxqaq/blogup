@@ -8,6 +8,10 @@ namespace Core {
 namespace Constants {
 
 
+// Contexts
+const char C_GLOBAL[]              = "Global Context";
+
+
 }
 }
 

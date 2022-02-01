@@ -48,6 +48,9 @@ public slots:
 
 
     void addEditor(CustomEdit *editor);
+
+    void newSite();
+    void newPost();
 signals:
     void editorActivated(CustomEdit *editor);
     void openFolder();
@@ -59,6 +62,12 @@ protected:
 private slots:
     void tabBarRightClicked(CustomEdit *editor);
 
+
+    void on_actionPull_triggered();
+
+    void on_actionPush_triggered();
+
+    void on_actionConfig_triggered();
 
 private:
     void createActions();
