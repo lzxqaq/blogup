@@ -30,7 +30,9 @@ HEADERS += \
     $$PWD/mainwindow.h \
     $$PWD/fileexplorerwidget.h \
     $$PWD/editormanager/customedit.h \
-    $$PWD/editormanager/editormanager.h
+    $$PWD/editormanager/editormanager.h \
+    $$PWD/remote/hugo.h \
+    $$PWD/remote/process.h
 
 SOURCES += \
     $$PWD/actionmanager/actioncontainer.cpp \
@@ -45,6 +47,8 @@ SOURCES += \
     $$PWD/mainwindow.cpp \
     $$PWD/fileexplorerwidget.cpp \
     $$PWD/editormanager/customedit.cpp \
-    $$PWD/editormanager/editormanager.cpp
+    $$PWD/editormanager/editormanager.cpp \
+    $$PWD/remote/hugo.cpp \
+    $$PWD/remote/process.cpp
 
 FORMS +=

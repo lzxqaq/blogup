@@ -6,6 +6,8 @@
 namespace Ui {
 class NewSiteDialog;
 }
+class MainWindow;
+
 
 class NewSiteDialog : public QDialog
 {
@@ -16,7 +18,15 @@ public:
     virtual ~NewSiteDialog();
 
 private:
+    void accept() override;
+    void reject() override;
+
     Ui::NewSiteDialog *ui;
+
+    QString m_dirName;
+    QString m_dirPath;
+
+    friend MainWindow;
 
 };
 

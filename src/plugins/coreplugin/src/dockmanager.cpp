@@ -32,9 +32,9 @@ public:
     }
 };
 
-void DockManager::initUi()
+void DockManager::initUi(FileExplorerWidget * widget)
 {
-    auto fileWidget = createFileSystemTreeDockWidget();
+    ads::CDockWidget* fileWidget = addFileSystemTreeDockWidget(widget);
 
     auto centerWidget = createCenterWidget();
     m_centerDock = centerWidget;
@@ -97,16 +97,15 @@ int DockManager::count() const
     return total;
 }
 
-ads::CDockWidget *DockManager::createFileSystemTreeDockWidget()
+ads::CDockWidget* DockManager::addFileSystemTreeDockWidget(FileExplorerWidget * widget)
 {
-    FileExplorerWidget *w = new FileExplorerWidget(m_parent);
-
-    connect(w, &FileExplorerWidget::fileSelected, qobject_cast<MainWindow *>(m_parent), &MainWindow::openFile);
-    connect(qobject_cast<MainWindow *>(m_parent), &MainWindow::openFolder, w, &FileExplorerWidget::openExplorer);
-    connect(qobject_cast<MainWindow *>(m_parent), &MainWindow::closeFolder, w, &FileExplorerWidget::closeExplorer);
+    connect(widget, &FileExplorerWidget::fileSelected, qobject_cast<MainWindow *>(m_parent), &MainWindow::openFile);
+    connect(widget, &FileExplorerWidget::newSite, qobject_cast<MainWindow *>(m_parent), &MainWindow::newSite);
+    connect(qobject_cast<MainWindow *>(m_parent), &MainWindow::openFolder, widget, &FileExplorerWidget::openExplorer);
+    connect(qobject_cast<MainWindow *>(m_parent), &MainWindow::closeFolder, widget, &FileExplorerWidget::closeExplorer);
 
     ads::CDockWidget* fileWidget = new ads::CDockWidget(QString("EXPLORER"));
-    fileWidget->setWidget(w);
+    fileWidget->setWidget(widget);
     fileWidget->setFeature(ads::CDockWidget::DockWidgetMovable, false);
     fileWidget->setFeature(ads::CDockWidget::DockWidgetFloatable, false);
     fileWidget->setFeature(ads::CDockWidget::DockWidgetClosable, false);

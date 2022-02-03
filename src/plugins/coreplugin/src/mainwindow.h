@@ -17,6 +17,8 @@ class EditorManager;
 class CustomEdit;
 class DockManager;
 
+class FileExplorerWidget;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -51,9 +53,10 @@ public slots:
 
     void newSite();
     void newPost();
+
 signals:
     void editorActivated(CustomEdit *editor);
-    void openFolder();
+    void openFolder(QString path = QString());
     void closeFolder();
 
 protected:
@@ -76,10 +79,11 @@ private:
     bool checkFileForModification(CustomEdit *editor);
 
 
-    Ui::MainWindow *ui;
-    EditorManager *m_editorManager;
-    DockManager *m_dockManager;
+    Ui::MainWindow *ui = nullptr;
+    EditorManager *m_editorManager = nullptr;
+    DockManager *m_dockManager = nullptr;
 
+    FileExplorerWidget *m_fileWidget = nullptr;
 };
 
 

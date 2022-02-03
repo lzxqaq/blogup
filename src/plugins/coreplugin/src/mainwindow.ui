@@ -20,7 +20,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>17</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -59,19 +59,21 @@
     <addaction name="separator"/>
     <addaction name="actionDelete"/>
    </widget>
-   <widget class="QMenu" name="menuSetting">
+   <widget class="QMenu" name="menuSite">
     <property name="title">
-     <string>Setting</string>
+     <string>Site</string>
     </property>
+    <addaction name="actionPreview"/>
+    <addaction name="actionMake"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
     <property name="title">
      <string>About</string>
     </property>
    </widget>
-   <widget class="QMenu" name="menuGit">
+   <widget class="QMenu" name="menuRemote">
     <property name="title">
-     <string>Git</string>
+     <string>Remote</string>
     </property>
     <addaction name="actionPull"/>
     <addaction name="actionPush"/>
@@ -80,8 +82,8 @@
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
-   <addaction name="menuGit"/>
-   <addaction name="menuSetting"/>
+   <addaction name="menuRemote"/>
+   <addaction name="menuSite"/>
    <addaction name="menuAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -232,6 +234,16 @@
   <action name="actionConfig">
    <property name="text">
     <string>Config</string>
+   </property>
+  </action>
+  <action name="actionPreview">
+   <property name="text">
+    <string>Preview</string>
+   </property>
+  </action>
+  <action name="actionMake">
+   <property name="text">
+    <string>Make</string>
    </property>
   </action>
  </widget>

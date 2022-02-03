@@ -50,6 +50,11 @@
 #include "dialog/newpostdialog.h"
 #include "dialog/newsitedialog.h"
 
+#include "remote/process.h"
+#include "remote/hugo.h"
+
+
+#include "fileexplorerwidget.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -67,6 +72,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     m_editorManager = new EditorManager(this);
     m_dockManager = new DockManager(this);
+
+
     connect(m_dockManager, &DockManager::editorCloseRequested, this, [=](CustomEdit *editor) { closeFile(editor); });
 
     connect(m_dockManager, &DockManager::editorActivated, this, &MainWindow::activateEditor);
@@ -101,14 +108,17 @@ MainWindow::~MainWindow()
 
 void MainWindow::createContent()
 {
-    m_dockManager->initUi();
+    m_fileWidget = new FileExplorerWidget(this);
+    m_dockManager->initUi(m_fileWidget);
 }
 
 void MainWindow::createActions()
 {
     connect(ui->actionNewFile, &QAction::triggered, this, &MainWindow::newFile);
     connect(ui->actionOpenFile, &QAction::triggered, this, &MainWindow::openFileDialog);
-    connect(ui->actionOpenFolder, &QAction::triggered, this, &MainWindow::openFolder);
+    connect(ui->actionOpenFolder, &QAction::triggered, this, [=](){
+        openFolder();
+    });
 
     connect(ui->actionSave, &QAction::triggered, this, &MainWindow::saveCurrentFile);
 
@@ -249,13 +259,31 @@ void MainWindow::addEditor(CustomEdit *editor)
 void MainWindow::newSite()
 {
     NewSiteDialog *dialog = new NewSiteDialog(this);
-    dialog->exec();
+    if (dialog->exec() != QDialog::Accepted) return;
+
+    QStringList args;
+    QString folder = dialog->m_dirPath + "/" + dialog->m_dirName;
+    args << "new";
+    args << "site";
+    args << folder;
+    Hugo *hugo = new Hugo(args, QString(), this);
+
+    openFolder(folder);
 }
 
 void MainWindow::newPost()
 {
     NewPostDialog *dialog = new NewPostDialog(this);
     dialog->exec();
+    QString folder = m_fileWidget->getCurrentDir();
+
+    QStringList args;
+    QString fileName = dialog->m_subDir + "/" + dialog->m_fileName;
+    args << "new";
+    args << fileName;
+    Hugo *hugo = new Hugo(args, folder, this);
+
+    openFile(folder + "/content/" + fileName);
 }
 
 

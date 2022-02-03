@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>New Site</string>
   </property>
-  <widget class="QDialogButtonBox" name="buttonBox">
+  <widget class="QDialogButtonBox" name="dialogBtn">
    <property name="geometry">
     <rect>
      <x>370</x>
@@ -68,12 +68,12 @@
     <string>Directory name:</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit">
+  <widget class="QLineEdit" name="dirName">
    <property name="geometry">
     <rect>
      <x>20</x>
      <y>70</y>
-     <width>301</width>
+     <width>421</width>
      <height>25</height>
     </rect>
    </property>
@@ -91,7 +91,7 @@
     <string>Create website as subdirectory of:</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit_2">
+  <widget class="QLineEdit" name="dirPath">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -101,7 +101,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton">
+  <widget class="QPushButton" name="fileSelectBtn">
    <property name="geometry">
     <rect>
      <x>460</x>
@@ -127,7 +127,7 @@
     <string>Hugo theme:</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit_3">
+  <widget class="QLineEdit" name="themeName">
    <property name="geometry">
     <rect>
      <x>90</x>
@@ -137,7 +137,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QCheckBox" name="checkBox">
+  <widget class="QCheckBox" name="cvConfig2YAML">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -150,7 +150,7 @@
     <string>Convert the site config file to YAML</string>
    </property>
   </widget>
-  <widget class="QCheckBox" name="checkBox_2">
+  <widget class="QCheckBox" name="cvAll2YAML">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -163,7 +163,7 @@
     <string>Convert all post metadata to YAML</string>
    </property>
   </widget>
-  <widget class="QCheckBox" name="checkBox_3">
+  <widget class="QCheckBox" name="addSample">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -176,7 +176,7 @@
     <string>Add sample blog posts</string>
    </property>
   </widget>
-  <widget class="QCheckBox" name="checkBox_4">
+  <widget class="QCheckBox" name="addExampleSite">
    <property name="geometry">
     <rect>
      <x>300</x>
@@ -189,7 +189,7 @@
     <string>Add the example site from the theme</string>
    </property>
   </widget>
-  <widget class="QCheckBox" name="checkBox_5">
+  <widget class="QCheckBox" name="installHugo">
    <property name="geometry">
     <rect>
      <x>300</x>
@@ -206,7 +206,7 @@
  <resources/>
  <connections>
   <connection>
-   <sender>buttonBox</sender>
+   <sender>dialogBtn</sender>
    <signal>accepted()</signal>
    <receiver>NewSiteDialog</receiver>
    <slot>accept()</slot>
@@ -222,7 +222,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>buttonBox</sender>
+   <sender>dialogBtn</sender>
    <signal>rejected()</signal>
    <receiver>NewSiteDialog</receiver>
    <slot>reject()</slot>

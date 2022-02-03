@@ -128,10 +128,15 @@ FileExplorerWidget::FileExplorerWidget(QWidget *parent) :
     m_welcomeWidget = new QWidget(this);
     auto welcomeLayout = new QVBoxLayout(m_welcomeWidget);
     welcomeLayout->addStretch();
-    QPushButton* openButton = new QPushButton("Open project");
+    QPushButton* openButton = new QPushButton("Open Site");
+    QPushButton* newButton = new QPushButton("New Site");
     welcomeLayout->addWidget( openButton );
+    welcomeLayout->addWidget( newButton );
     welcomeLayout->addStretch();
-    connect(openButton, &QPushButton::clicked, this, &FileExplorerWidget::openExplorer);
+    connect(openButton, &QPushButton::clicked, this, [=](){
+        openExplorer();
+    });
+    connect(newButton, &QPushButton::clicked, this, &FileExplorerWidget::newSite);
 
     m_fileTreeView = new QTreeView(this);
 
@@ -188,13 +193,24 @@ void FileExplorerWidget::oncustomContextMenuRequested(const QPoint p)
 
 }
 
-void FileExplorerWidget::openExplorer()
+void FileExplorerWidget::openExplorer(QString path)
 {
-    QString dir = QFileDialog::getExistingDirectory(this);
+    QString dir;
+    if (path.isEmpty())
+    {
+        dir = QFileDialog::getExistingDirectory(this);
+    }
+    else
+    {
+        dir = path;
+    }
     if (!dir.isEmpty())
     {
+//        m_fileSystemModel->
         setRootDirectory(dir);
         m_stackedLayout->setCurrentWidget(m_fileTreeView);
+
+        currentDir = dir;
     }
 }
 
@@ -210,5 +226,10 @@ void FileExplorerWidget::setRootDirectory(const QString &directory)
     const QModelIndex index = m_sortProxyModel->mapFromSource(
         m_fileSystemModel->setRootPath(directory));
     m_fileTreeView->setRootIndex(index);
+}
+
+const QString &FileExplorerWidget::getCurrentDir() const
+{
+    return currentDir;
 }
 

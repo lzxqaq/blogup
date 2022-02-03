@@ -21,11 +21,14 @@ public:
     void setPath(const QString &path);
     QString getPath();
 
+    const QString &getCurrentDir() const;
+
 signals:
     void fileSelected(const QString &filePath);
+    void newSite();
 
 public slots:
-    void openExplorer();
+    void openExplorer(QString path = QString());
     void closeExplorer();
 
 protected:
@@ -40,6 +43,9 @@ private slots:
 
 private:
     bool initialized = false;
+
+    QString currentDir;
+
     QFileSystemModel *m_fileSystemModel = nullptr;
     QSortFilterProxyModel *m_sortProxyModel = nullptr;
     QTreeView *m_fileTreeView = nullptr;

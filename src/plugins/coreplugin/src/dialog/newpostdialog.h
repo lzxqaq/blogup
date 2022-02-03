@@ -6,6 +6,7 @@
 namespace Ui {
 class NewPostDialog;
 }
+class MainWindow;
 
 class NewPostDialog : public QDialog
 {
@@ -15,7 +16,17 @@ public:
     virtual ~NewPostDialog();
 
 private:
+    void accept() override;
+    void reject() override;
+
     Ui::NewPostDialog *ui;
+
+    QString m_title;
+    QString m_subDir;
+
+    QString m_fileName;
+
+    friend MainWindow;
 
 };
 

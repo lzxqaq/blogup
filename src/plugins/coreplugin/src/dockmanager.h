@@ -9,6 +9,8 @@
 
 #include "core_global.h"
 
+class FileExplorerWidget;
+
 class CORE_EXPORT DockManager : public QObject
 {
     Q_OBJECT
@@ -26,12 +28,10 @@ public:
 
     int count() const;
 
-    void initUi();
-
-    ads::CDockWidget* createFileSystemTreeDockWidget();
-
     ads::CDockWidget *createCenterWidget();
 
+    ads::CDockWidget* addFileSystemTreeDockWidget(FileExplorerWidget *widget);
+    void initUi(FileExplorerWidget *widget);
 private slots:
     void dockWidgetCloseRequested();
 
